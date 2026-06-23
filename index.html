@@ -2,73 +2,429 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>เกมคณิตคิดสนุก</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>เก่งคณิต คิดสนุก - เรื่องเซต</title>
+    
+    <!-- ไลบรารี MediaPipe สำหรับ AI ตรวจจับฝ่ามือผ่านกล้อง WebCam -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.1/hands.js" crossorigin="anonymous"></script>
+
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Sarabun', sans-serif; }
-        #bg-video { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; transform: scaleX(-1); z-index: -1; }
-        #hand-pointer { position: absolute; width: 40px; height: 40px; background: #ffeb3b; border-radius: 50%; z-index: 999; pointer-events: none; border: 3px solid white; box-shadow: 0 0 15px orange; }
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+
+        * { box-sizing: border-box; font-family: 'Sarabun', sans-serif; user-select: none; }
+        body { margin: 0; overflow: hidden; background-color: #222; color: #333; }
+
+        /* พื้นหลังกล้อง WebCam เต็มจอ (กลับด้านให้เหมือนกระจกเงาเล่นง่าย) */
+        #bg-video { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; transform: scaleX(-1); }
         
+        /* จุดเลเซอร์ชี้ตำแหน่งฝ่ามือตามการตรวจจับของ AI */
+        #hand-pointer { position: absolute; width: 35px; height: 35px; background: rgba(255, 235, 59, 0.8); border: 3px solid #fff; border-radius: 50%; pointer-events: none; z-index: 999; display: none; transform: translate(-50%, -50%); box-shadow: 0 0 20px #ffeb3b, inset 0 0 8px #fff; }
+
+        /* --- หน้าเริ่มเกม (ใส่ลิงก์รูปภาพพื้นหลังตรงของครูนนท์เรียบร้อย) --- */
         #start-screen { 
-    /* ... ส่วนประกอบอื่นๆ ... */
-    background-image: url('https://raw.githubusercontent.com/noononth57-rgb/index.html/main/ChatGPT%20Image%2023%20%E0%B8%A1%E0%B8%B4.%E0%B8%A2.%202569%2021_08_39%20(1).png'); 
-    background-size: cover; 
-    background-position: center;
-    /* ... */}
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-image: url("https://raw.githubusercontent.com/noononth57-rgb/index.html/main/ChatGPT%20Image%2023%20%E0%B8%A1%E0%B8%B4.%E0%B8%A2.%202569%2021_08_39%20(1).png");
+            background-size: cover; 
+            background-position: center;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 100; 
+        }
         
-        .btn { padding: 20px 40px; font-size: 24px; cursor: pointer; margin: 10px; border-radius: 20px; border: none; background: #4caf50; color: white; }
+        .game-title { font-size: 4.5rem; color: #ffeb3b; font-weight: bold; text-align: center; margin: 0; text-shadow: -3px -3px 0 #4a148c, 3px -3px 0 #4a148c, -3px 3px 0 #4a148c, 3px 3px 0 #4a148c, 0px 8px 0 #4a148c, 0px 15px 20px rgba(0,0,0,0.4); }
+        .game-subtitle { background: #d32f2f; color: #fff; padding: 10px 40px; border-radius: 20px; font-size: 1.8rem; font-weight: bold; box-shadow: 0 6px 0 #b71c1c, 0 10px 20px rgba(0,0,0,0.3); margin-top: 15px; margin-bottom: 40px; border: 3px solid #ffeb3b; }
+
+        .menu-container { display: flex; gap: 30px; }
+        .menu-card { background: white; border-radius: 25px; width: 220px; height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 12px 0 #cbd5e1, 0 20px 25px rgba(0,0,0,0.25); transition: transform 0.1s; border: none; }
+        .card-icon-circle { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 4rem; font-weight: bold; box-shadow: inset 0 -6px 0 rgba(0,0,0,0.2); margin-bottom: 20px; }
+        .circle-green { background: radial-gradient(circle at 30% 30%, #81c784, #4caf50); }
+        .circle-blue { background: radial-gradient(circle at 30% 30%, #4fc3f7, #0288d1); }
+        .card-text { font-size: 1.5rem; font-weight: bold; color: #374151; }
+
+        /* หน้าต่างป๊อปอัพควบคุมการเปิดกล้อง */
+        #how-to-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 150; justify-content: center; align-items: center; }
+        .modal-card { background: white; border-radius: 30px; width: 550px; padding: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); text-align: center; }
+        .modal-title { font-size: 2.3rem; font-weight: bold; color: #4a148c; margin-bottom: 20px; }
+        .modal-list { text-align: left; font-size: 1.3rem; line-height: 1.8; margin-bottom: 30px; color: #4b5563; }
+        .modal-btn-group { display: flex; justify-content: center; gap: 20px; }
+        .modal-btn { padding: 15px 35px; font-size: 1.3rem; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; color: white; box-shadow: 0 5px 0 rgba(0,0,0,0.2); }
+        .btn-camera-init { background: #0288d1; }
+        .btn-game-start { background: #4caf50; opacity: 0.5; pointer-events: none; } 
+
+        /* --- หน้าจอหลักระหว่างเล่นเกม (ดีไซน์ตามไฟล์ image_2659e4.jpg) --- */
+        #game-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
         
-        #game-ui { display: none; position: absolute; top: 20px; left: 20px; color: white; font-size: 30px; font-weight: bold; z-index: 5; }
-        .choice-btn { position: absolute; bottom: 20%; width: 200px; height: 200px; border-radius: 50%; font-size: 50px; border: none; color: white; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        #btn-left { left: 20%; background: #4caf50; }
-        #btn-right { right: 20%; background: #2196f3; }
+        /* ไอคอนสถิติด้านบนซ้ายแบบตลับแคปซูล */
+        .top-left-ui { position: absolute; top: 25px; left: 25px; display: flex; gap: 15px; }
+        .stat-pill { background: #fffdf0; padding: 10px 22px; border-radius: 30px; font-size: 22px; font-weight: bold; display: flex; align-items: center; gap: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.15); border: 1px solid #ffeb3b; }
+        
+        /* ปุ่มหน้าแรกและปุ่มหยุดด้านบนขวา */
+        .top-right-ui { position: absolute; top: 25px; right: 25px; display: flex; gap: 15px; }
+        .icon-btn { background: #fffdf0; border: 1px solid #ccc; width: 55px; height: 55px; border-radius: 15px; font-size: 24px; cursor: pointer; box-shadow: 0 6px 12px rgba(0,0,0,0.15); display: flex; justify-content: center; align-items: center; }
+
+        /* กล่องข้อความโจทย์ขนาดใหญ่ตรงกลางด้านบน */
+        .question-box { background: white; padding: 35px 70px; border-radius: 25px; font-size: 55px; font-weight: bold; color: #2d2d6b; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: absolute; top: 15%; left: 50%; transform: translateX(-50%); white-space: nowrap; text-align: center; min-width: 450px; }
+        .question-box span { color: #29b6f6; }
+
+        /* ปุ่มคำตอบวงกลมขนาดใหญ่ฝั่งซ้ายและขวาด้านล่าง */
+        .choice-btn { width: 180px; height: 180px; border-radius: 50%; border: none; font-size: 65px; font-weight: bold; color: white; position: absolute; bottom: 15%; box-shadow: 0 12px 24px rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center; transition: transform 0.2s; }
+        .choice-btn.ai-hovered { transform: scale(1.18); box-shadow: 0 0 35px #ffeb3b; }
+        .btn-green { background: radial-gradient(circle at 30% 30%, #66bb6a, #4caf50); left: 10%; }
+        .btn-blue { background: radial-gradient(circle at 30% 30%, #4fc3f7, #0288d1); right: 10%; }
+
+        /* กล่องของขวัญไอเทมลับสุ่มเกิด */
+        #mystery-box { position: absolute; font-size: 65px; display: none; cursor: pointer; z-index: 50; animation: bounce 1s infinite alternate; }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
+
+        /* ตัวแจ้งเตือนตอบถูก/ผิดตรงกลางจอ */
+        #feedback-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 180px; display: none; z-index: 90; text-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+
+        /* --- หน้าจอสรุปคะแนนผู้เล่น --- */
+        #end-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); color: white; flex-direction: column; justify-content: center; align-items: center; z-index: 200; }
+        .end-card { background: #ffffff; color: #333; padding: 45px; border-radius: 30px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.5); width: 450px; }
+        .restart-btn { background: #ffeb3b; color: #4a148c; border: none; padding: 15px 45px; font-size: 1.6rem; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 6px 0 #f57c00; margin-top: 25px; transition: 0.1s; }
+        .restart-btn:active { transform: translateY(6px); box-shadow: none; }
     </style>
 </head>
 <body>
-    <video id="bg-video" autoplay playsinline muted></video>
+
+    <!-- พื้นหลังวิดีโอกล้องและการชี้จุดตำแหน่งมือ -->
+    <video id="bg-video" autoplay playsinline muted style="display:none;"></video>
     <div id="hand-pointer"></div>
 
+    <!-- เมนูหลักเริ่มเกม -->
     <div id="start-screen">
-        <h1 style="color: white; text-shadow: 2px 2px 5px black;">เก่งคณิต คิดสนุก</h1>
-        <button class="btn" onclick="startCamera()">📷 เปิดกล้อง</button>
-        <button class="btn" id="start-btn" disabled onclick="beginGame()">▶️ เริ่มเกม</button>
+        <h1 class="game-title">เก่งคณิต คิดสนุก</h1>
+        <div class="game-subtitle">ระบบ AI ตรวจจับฝ่ามือท้าทาย 100 ข้อ</div>
+        <div class="menu-container">
+            <button class="menu-card" onclick="openInstruction('membership')">
+                <div class="card-icon-circle circle-green">∈</div>
+                <div class="card-text">การเป็นสมาชิก</div>
+            </button>
+            <button class="menu-card" onclick="openInstruction('subset')">
+                <div class="card-icon-circle circle-blue">⊂</div>
+                <div class="card-text">การเป็นสับเซต</div>
+            </button>
+        </div>
     </div>
 
-    <div id="game-ui">
-        <div>คะแนน: <span id="score">0</span></div>
-        <div>เวลา: <span id="timer">90</span></div>
+    <!-- หน้าป๊อปอัพควบคุมสิทธิ์กล้องก่อนเข้าเกม -->
+    <div id="how-to-modal">
+        <div class="modal-card">
+            <div class="modal-title">เตรียมความพร้อม 🎮</div>
+            <div class="modal-list">
+                <b>1. โหมดการเล่น:</b> <span id="selected-mode-text" style="color:#0288d1; font-weight:bold;"></span><br>
+                <b>2. กติกาการตอบ:</b> ยกฝ่ามือค้างไว้บนปุ่มตัวเลือกเพื่อตอบโจทย์<br>
+                <b>3. โบนัสพิเศษ:</b> เลื่อนมือไปเปิดกล่องของขวัญ 🎁 สุ่มรับ +20 คะแนน
+            </div>
+            <div class="modal-btn-group">
+                <button class="modal-btn btn-camera-init" id="cam-btn" onclick="initAIAndCamera()">📷 เปิดใช้งานกล้อง</button>
+                <button class="modal-btn btn-game-start" id="start-btn" onclick="realStartGame()">▶️ เริ่มเข้าสู่เกม</button>
+            </div>
+        </div>
     </div>
 
-    <button class="choice-btn" id="btn-left" style="left: 10%;">16</button>
-    <button class="choice-btn" id="btn-right" style="right: 10%;">14</button>
+    <!-- หน้าอินเตอร์เฟสหลักระหว่างการเล่นเกม -->
+    <div id="game-screen">
+        <div class="top-left-ui">
+            <div class="stat-pill">🪙 คะแนน: <span id="scoreDisplay">0</span></div>
+            <div class="stat-pill">⏰ เวลา: <span id="timeDisplay">90</span></div>
+            <div class="stat-pill">📝 ข้อที่: <span id="qCountDisplay">1</span>/100</div>
+        </div>
+        <div class="top-right-ui">
+            <div class="icon-btn">⏸️</div>
+            <button class="icon-btn" onclick="location.reload()">🏠</button>
+        </div>
+        
+        <div id="mystery-box">🎁</div>
+        <div class="question-box" id="questionText">A _ B <span>?</span></div>
+        
+        <button class="choice-btn btn-green" id="btn-left">∈</button>
+        <button class="choice-btn btn-blue" id="btn-right">∉</button>
+        
+        <div id="feedback-overlay">✅</div>
+        <div style="position: absolute; bottom: 15px; width: 100%; text-align: center; color: white; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); font-size: 16px;">โดย เพจคุณครูใจดี</div>
+    </div>
+
+    <!-- หน้าสรุปผลคะแนนเมื่อสิ้นสุดเกม -->
+    <div id="end-screen">
+        <div class="end-card">
+            <h2 style="font-size: 2.5rem; margin-top:0; color:#4a148c;">สิ้นสุดการท้าทาย!</h2>
+            <p style="font-size: 1.4rem; margin: 10px 0;">ตอบโจทย์ไปทั้งหมด: <span id="finalQuestions" style="color:#e91e63; font-weight:bold;">0</span> ข้อ</p>
+            <p style="font-size: 1.6rem; margin: 10px 0;">คะแนนรวมสะสม: <span id="finalScore" style="color: #4caf50; font-weight: bold; font-size: 3.2rem;">0</span></p>
+            <button class="restart-btn" onclick="location.reload()">ย้อนกลับไปหน้าแรก</button>
+        </div>
+    </div>
+
+    <!-- ไฟล์เสียง Effect ประกอบการเล่นเกม (เรียกใช้ผ่าน Cloud ฟรี) -->
+    <audio id="bgmSound" src="https://assets.mixkit.co/active_storage/sfx/135/135-preview.mp3" loop preload="auto"></audio>
+    <audio id="correctSound" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto"></audio>
+    <audio id="wrongSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3" preload="auto"></audio>
+    <audio id="bonusSound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" preload="auto"></audio>
 
     <script>
-        let score = 0, timer = 90;
-        const videoElement = document.getElementById('bg-video');
-        const pointer = document.getElementById('hand-pointer');
+        // --- ระบบสร้างชุดคำถามคณิตศาสตร์เรื่องเซตระดับท้าทายจำนวน 100 ข้อคละความยาก ---
+        function generateQuestionsPool(mode) {
+            const pool = [];
+            const setsLevel1 = ["{1, 2, 3}", "{2, 3, 4}", "{a, b, c}"];
+            const setsLevel2 = ["{1, {2}, 3}", "{{1}, 2, 3}", "{0, 1, 2}", "{1, 2, {1, 2}}"];
+            
+            while(pool.length < 100) {
+                let qText, isTrue;
+                let type = Math.floor(Math.random() * 4); 
 
-        function startCamera() {
-            const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-            hands.onResults((results) => {
-                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                    const lm = results.multiHandLandmarks[0][9];
-                    pointer.style.left = (1 - lm.x) * window.innerWidth + 'px';
-                    pointer.style.top = lm.y * window.innerHeight + 'px';
+                if (mode === 'membership') {
+                    if (type === 0) { 
+                        qText = `1 _ ${setsLevel1[Math.floor(Math.random()*setsLevel1.length)]}`; isTrue = true;
+                    } else if (type === 1) { 
+                        qText = `{1} _ ${setsLevel1[0]}`; isTrue = false;
+                    } else if (type === 2) { 
+                        qText = `{1} _ ${setsLevel2[1]}`; isTrue = true;
+                    } else { 
+                        let subType = Math.random();
+                        if(subType > 0.6) { qText = `0 _ {1, 2, 3}`; isTrue = false; }
+                        else if(subType > 0.3) { qText = `0 _ {0, 1}`; isTrue = true; }
+                        else { qText = `{0} _ {0, {0}}`; isTrue = true; }
+                    }
+                } else { 
+                    if (type === 0) { 
+                        qText = `{1} _ ${setsLevel1[0]}`; isTrue = true;
+                    } else if (type === 1) { 
+                        qText = `1 _ ${setsLevel1[0]}`; isTrue = false;
+                    } else if (type === 2) { 
+                        let subType = Math.random();
+                        if(subType > 0.5) { qText = `0 _ ${setsLevel2[0]}`; isTrue = false; }
+                        else { qText = `{1, 2} _ {1, 2, 3}`; isTrue = true; }
+                    } else { 
+                        let subType = Math.random();
+                        if(subType > 0.5) { qText = `{{1}} _ {{1}, 2, 3}`; isTrue = true; }
+                        else { qText = `{1, 2} _ {{1, 2}, 3}`; isTrue = false; }
+                    }
                 }
-            });
-            const camera = new Camera(videoElement, { onFrame: async () => await hands.send({ image: videoElement }), width: 1280, height: 720 });
-            camera.start().then(() => document.getElementById('start-btn').disabled = false);
+
+                let askNegative = Math.random() > 0.5;
+                let correctAns = mode === 'membership' ? (isTrue ? "∈" : "∉") : (isTrue ? "⊂" : "⊄");
+                
+                if(askNegative) {
+                    correctAns = (correctAns === "∈" ? "∉" : (correctAns === "∉" ? "∈" : (correctAns === "⊂" ? "⊄" : "⊂")));
+                    isTrue = !isTrue;
+                }
+
+                if(!pool.some(p => p.q === qText)) pool.push({ q: qText, a: correctAns });
+            }
+            return pool.sort(() => Math.random() - 0.5); 
         }
 
-        function beginGame() {
+        let chosenMode = '', availableQuestions = [], currentQuestion = null, score = 0, timeLeft = 90, questionCount = 1, timerId = null, mysteryBoxTimer = null, isCameraActive = false, canProcessAnswer = true;
+        let leftSymbol = '', rightSymbol = '', currentHoveredButton = null, hoverStartTime = 0;
+        const requiredHoverTime = 550; 
+
+        function openInstruction(mode) {
+            chosenMode = mode;
+            document.getElementById('selected-mode-text').innerText = (mode === 'membership') ? "การเป็นสมาชิก (∈, ∉)" : "การเป็นสับเซต (⊂, ⊄)";
+            document.getElementById('how-to-modal').style.display = 'flex';
+        }
+
+        // ขอสิทธิ์ระบบและเริ่มสตรีมกล้องเว็บแคม
+        async function initCamera() {
+            const camBtn = document.getElementById('cam-btn');
+            camBtn.innerText = "⏳ ระบบกำลังเชื่อมต่อกล้อง...";
+            camBtn.style.pointerEvents = "none";
+
+            const videoElement = document.getElementById('bg-video');
+            try {
+                const cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                videoElement.srcObject = cameraStream;
+                isCameraActive = true;
+                videoElement.style.display = "block";
+                document.getElementById('hand-pointer').style.display = "block";
+                camBtn.innerText = "✅ เปิดใช้งานกล้องสำเร็จ";
+                camBtn.style.background = "#78909c";
+                
+                const startBtn = document.getElementById('start-btn');
+                startBtn.style.opacity = "1";
+                startBtn.style.pointerEvents = "auto";
+            } catch (err) {
+                alert("ไม่สามารถเข้าถึงกล้องได้ กรุณาตรวจสอบการอนุญาตสิทธิ์การเข้าถึงกล้องบนเบราว์เซอร์");
+                console.error(err);
+                camBtn.innerText = "⚠️ การเชื่อมต่อกล้องล้มเหลว";
+                camBtn.style.pointerEvents = "auto";
+                camBtn.style.background = "#d32f2f";
+            }
+        }
+
+        function initAIAndCamera() {
+            initCamera(); 
+
+            // ผูกฟังก์ชันโมเดลปัญญาประดิษฐ์ตรวจจับฝ่ามือ MediaPipe Hands
+            const hands = new Hands({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+            });
+            hands.setOptions({
+                maxNumHands: 1,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.6,
+                minTrackingConfidence: 0.6
+            });
+            hands.onResults(onHandTrackingResults);
+
+            const videoElement = document.getElementById('bg-video');
+            const camera = new Camera(videoElement, {
+                onFrame: async () => {
+                    if (isCameraActive) await hands.send({ image: videoElement });
+                },
+                width: 1280,
+                height: 720
+            });
+            camera.start();
+        }
+
+        function realStartGame() {
+            document.getElementById('bgmSound').play().catch(e => console.log("Audio play deferred"));
+            
+            availableQuestions = generateQuestionsPool(chosenMode);
+            
+            if(chosenMode === 'membership') {
+                leftSymbol = "∈"; rightSymbol = "∉";
+            } else {
+                leftSymbol = "⊂"; rightSymbol = "⊄";
+            }
+
+            document.getElementById('btn-left').innerText = leftSymbol;
+            document.getElementById('btn-right').innerText = rightSymbol;
+
             document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('game-ui').style.display = 'block';
-            setInterval(() => {
-                timer--;
-                document.getElementById('timer').innerText = timer;
-                if(timer <= 0) alert("หมดเวลา! คะแนนของคุณคือ: " + score);
+            document.getElementById('how-to-modal').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+
+            updateUIDisplay();
+            generateNextQuestion();
+
+            // ตั้งเวลานับถอยหลังเกมส์
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateUIDisplay();
+                if (timeLeft <= 0) finalizeGame();
             }, 1000);
+
+            // วงรอบการสุ่มปล่อยกล่องของขวัญพิเศษ
+            mysteryBoxTimer = setInterval(spawnMysteryBox, 12000);
+        }
+
+        function onHandTrackingResults(results) {
+            const pointer = document.getElementById('hand-pointer');
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const palmCenter = results.multiHandLandmarks[0][9]; // พิกัดข้อนิ้วกลางส่วนล่างเป็นจุดหลักในการชี้คลาส
+                
+                const xPixel = (1 - palmCenter.x) * window.innerWidth;
+                const yPixel = palmCenter.y * window.innerHeight;
+
+                pointer.style.left = `${xPixel}px`;
+                pointer.style.top = `${yPixel}px`;
+
+                if (document.getElementById('game-screen').style.display === 'block' && canProcessAnswer) {
+                    checkPointerCollisions(xPixel, yPixel);
+                }
+            }
+        }
+
+        function checkPointerCollisions(hx, hy) {
+            const btnLeft = document.getElementById('btn-left'), btnRight = document.getElementById('btn-right'), mBox = document.getElementById('mystery-box');
+            const rectLeft = btnLeft.getBoundingClientRect(), rectRight = btnRight.getBoundingClientRect();
+            let insideAnyButton = null;
+
+            if (hx >= rectLeft.left && hx <= rectLeft.right && hy >= rectLeft.top && hy <= rectLeft.bottom) insideAnyButton = 'left';
+            else if (hx >= rectRight.left && hx <= rectRight.right && hy >= rectRight.top && hy <= rectRight.bottom) insideAnyButton = 'right';
+
+            if (insideAnyButton) {
+                if (currentHoveredButton !== insideAnyButton) {
+                    currentHoveredButton = insideAnyButton; hoverStartTime = Date.now();
+                    if(insideAnyButton === 'left') btnLeft.classList.add('ai-hovered');
+                    if(insideAnyButton === 'right') btnRight.classList.add('ai-hovered');
+                } else {
+                    if (Date.now() - hoverStartTime >= requiredHoverTime) {
+                        executeAnswerSelection(insideAnyButton); resetHoverState();
+                    }
+                }
+            } else resetHoverState();
+
+            // ตรวจสอบการชนของมือกับกล่องโบนัส
+            if (mBox.style.display === 'block') {
+                const rectBox = mBox.getBoundingClientRect();
+                if (hx >= rectBox.left && hx <= rectBox.right && hy >= rectBox.top && hy <= rectBox.bottom) collectBonusBox();
+            }
+        }
+
+        function resetHoverState() {
+            document.getElementById('btn-left').classList.remove('ai-hovered'); document.getElementById('btn-right').classList.remove('ai-hovered');
+            currentHoveredButton = null;
+        }
+
+        function executeAnswerSelection(side) {
+            canProcessAnswer = false;
+            const chosenAnswer = (side === 'left') ? leftSymbol : rightSymbol;
+            const feedback = document.getElementById('feedback-overlay');
+            
+            if (chosenAnswer === currentQuestion.a) { 
+                score += 10; 
+                document.getElementById('correctSound').play(); 
+                feedback.innerText = "✅";
+                feedback.style.color = "#4caf50";
+            } else { 
+                document.getElementById('wrongSound').play(); 
+                feedback.innerText = "❌"; 
+                feedback.style.color = "#f44336"; 
+            }
+
+            feedback.style.display = "block";
+            setTimeout(() => {
+                feedback.style.display = "none";
+                questionCount++;
+                if (questionCount > 100) finalizeGame();
+                else { canProcessAnswer = true; updateUIDisplay(); generateNextQuestion(); }
+            }, 600);
+        }
+
+        function generateNextQuestion() {
+            currentQuestion = availableQuestions[questionCount - 1]; 
+            document.getElementById('questionText').innerHTML = currentQuestion.q.replace("_", " &nbsp;&nbsp; ") + " <span>?</span>";
+        }
+
+        function updateUIDisplay() {
+            document.getElementById('scoreDisplay').innerText = score;
+            document.getElementById('timeDisplay').innerText = timeLeft;
+            document.getElementById('qCountDisplay').innerText = questionCount;
+        }
+
+        function spawnMysteryBox() {
+            const mBox = document.getElementById('mystery-box');
+            mBox.style.left = `${Math.floor(Math.random() * (window.innerWidth - 150)) + 50}px`;
+            mBox.style.top = `${Math.floor(Math.random() * (window.innerHeight - 350)) + 220}px`;
+            mBox.style.display = 'block';
+            setTimeout(() => { mBox.style.display = 'none'; }, 4500);
+        }
+
+        function collectBonusBox() {
+            document.getElementById('mystery-box').style.display = 'none';
+            document.getElementById('bonusSound').play();
+            score += 20; updateUIDisplay();
+        }
+
+        function finalizeGame() {
+            clearInterval(timerId); clearInterval(mysteryBoxTimer);
+            document.getElementById('bgmSound').pause();
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'flex';
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('finalQuestions').innerText = questionCount - 1; 
+            document.getElementById('hand-pointer').style.display = 'none';
         }
     </script>
 </body>
