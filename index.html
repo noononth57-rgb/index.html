@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>เก่งคณิต คิดสนุก - เรื่องเซต</title>
     
-    <!-- ไลบรารี MediaPipe สำหรับ AI ตรวจจับฝ่ามือผ่านกล้อง WebCam -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.1/hands.js" crossorigin="anonymous"></script>
 
@@ -20,7 +20,7 @@
         /* จุดเลเซอร์ชี้ตำแหน่งฝ่ามือตามการตรวจจับของ AI */
         #hand-pointer { position: absolute; width: 35px; height: 35px; background: rgba(255, 235, 59, 0.8); border: 3px solid #fff; border-radius: 50%; pointer-events: none; z-index: 999; display: none; transform: translate(-50%, -50%); box-shadow: 0 0 20px #ffeb3b, inset 0 0 8px #fff; }
 
-        /* --- หน้าเริ่มเกม (ใส่ลิงก์รูปภาพพื้นหลังตรงของครูนนท์เรียบร้อย) --- */
+        /* --- หน้าเริ่มเกม (เหลือเฉพาะภาพพื้นหลังและปุ่มรูปภาพตรงกลางเด้งดึ๋ง) --- */
         #start-screen { 
             position: absolute; 
             top: 0; 
@@ -31,21 +31,27 @@
             background-size: cover; 
             background-position: center;
             display: flex; 
-            flex-direction: column; 
             justify-content: center; 
             align-items: center; 
             z-index: 100; 
         }
         
-        .game-title { font-size: 4.5rem; color: #ffeb3b; font-weight: bold; text-align: center; margin: 0; text-shadow: -3px -3px 0 #4a148c, 3px -3px 0 #4a148c, -3px 3px 0 #4a148c, 3px 3px 0 #4a148c, 0px 8px 0 #4a148c, 0px 15px 20px rgba(0,0,0,0.4); }
-        .game-subtitle { background: #d32f2f; color: #fff; padding: 10px 40px; border-radius: 20px; font-size: 1.8rem; font-weight: bold; box-shadow: 0 6px 0 #b71c1c, 0 10px 20px rgba(0,0,0,0.3); margin-top: 15px; margin-bottom: 40px; border: 3px solid #ffeb3b; }
-
-        .menu-container { display: flex; gap: 30px; }
-        .menu-card { background: white; border-radius: 25px; width: 220px; height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 12px 0 #cbd5e1, 0 20px 25px rgba(0,0,0,0.25); transition: transform 0.1s; border: none; }
-        .card-icon-circle { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 4rem; font-weight: bold; box-shadow: inset 0 -6px 0 rgba(0,0,0,0.2); margin-bottom: 20px; }
-        .circle-green { background: radial-gradient(circle at 30% 30%, #81c784, #4caf50); }
-        .circle-blue { background: radial-gradient(circle at 30% 30%, #4fc3f7, #0288d1); }
-        .card-text { font-size: 1.5rem; font-weight: bold; color: #374151; }
+        /* สไตล์สำหรับเมนูปุ่มกดที่เป็นรูปภาพ */
+        .menu-container { display: flex; gap: 50px; justify-content: center; align-items: center; }
+        .menu-btn-img { 
+            width: 260px; /* ครูสามารถปรับขนาดความกว้างของปุ่มรูปภาพ เพิ่ม/ลด ได้ตรงนี้เลยครับ */
+            height: auto; 
+            cursor: pointer; 
+            transition: transform 0.1s, filter 0.1s;
+            filter: drop-shadow(0px 10px 0px rgba(0,0,0,0.3)); 
+        }
+        .menu-btn-img:hover { 
+            transform: scale(1.08); /* ขยายขึ้นเล็กน้อยเวลาเมาส์ชี้ */
+        }
+        .menu-btn-img:active { 
+            transform: scale(0.95); /* ยุบตัวลงเวลาเล็งกด */
+            filter: drop-shadow(0px 3px 0px rgba(0,0,0,0.3));
+        }
 
         /* หน้าต่างป๊อปอัพควบคุมการเปิดกล้อง */
         #how-to-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 150; justify-content: center; align-items: center; }
@@ -57,7 +63,7 @@
         .btn-camera-init { background: #0288d1; }
         .btn-game-start { background: #4caf50; opacity: 0.5; pointer-events: none; } 
 
-        /* --- หน้าจอหลักระหว่างเล่นเกม (ดีไซน์ตามไฟล์ image_2659e4.jpg) --- */
+        /* --- หน้าจอหลักระหว่างเล่นเกม --- */
         #game-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
         
         /* ไอคอนสถิติด้านบนซ้ายแบบตลับแคปซูล */
@@ -94,21 +100,17 @@
 </head>
 <body>
 
-    <!-- พื้นหลังวิดีโอกล้องและการชี้จุดตำแหน่งมือ -->
     <video id="bg-video" autoplay playsinline muted style="display:none;"></video>
     <div id="hand-pointer"></div>
 
-    <!-- เมนูหลักเริ่มเกม -->
     <div id="start-screen">
         <div class="menu-container">
-           <!-- ปุ่มรูปภาพโหมดการเป็นสมาชิก -->
             <img src="4.png" class="menu-btn-img" onclick="openInstruction('membership')" alt="การเป็นสมาชิก">
-
+            
             <img src="3.png" class="menu-btn-img" onclick="openInstruction('subset')" alt="การเป็นสับเซต">
         </div>
     </div>
 
-    <!-- หน้าป๊อปอัพควบคุมสิทธิ์กล้องก่อนเข้าเกม -->
     <div id="how-to-modal">
         <div class="modal-card">
             <div class="modal-title">เตรียมความพร้อม 🎮</div>
@@ -124,7 +126,6 @@
         </div>
     </div>
 
-    <!-- หน้าอินเตอร์เฟสหลักระหว่างการเล่นเกม -->
     <div id="game-screen">
         <div class="top-left-ui">
             <div class="stat-pill">🪙 คะแนน: <span id="scoreDisplay">0</span></div>
@@ -146,7 +147,6 @@
         <div style="position: absolute; bottom: 15px; width: 100%; text-align: center; color: white; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); font-size: 16px;">โดย เพจคุณครูใจดี</div>
     </div>
 
-    <!-- หน้าสรุปผลคะแนนเมื่อสิ้นสุดเกม -->
     <div id="end-screen">
         <div class="end-card">
             <h2 style="font-size: 2.5rem; margin-top:0; color:#4a148c;">สิ้นสุดการท้าทาย!</h2>
@@ -156,7 +156,6 @@
         </div>
     </div>
 
-    <!-- ไฟล์เสียง Effect ประกอบการเล่นเกม (เรียกใช้ผ่าน Cloud ฟรี) -->
     <audio id="bgmSound" src="https://assets.mixkit.co/active_storage/sfx/135/135-preview.mp3" loop preload="auto"></audio>
     <audio id="correctSound" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto"></audio>
     <audio id="wrongSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3" preload="auto"></audio>
@@ -225,7 +224,6 @@
             document.getElementById('how-to-modal').style.display = 'flex';
         }
 
-        // ขอสิทธิ์ระบบและเริ่มสตรีมกล้องเว็บแคม
         async function initCamera() {
             const camBtn = document.getElementById('cam-btn');
             camBtn.innerText = "⏳ ระบบกำลังเชื่อมต่อกล้อง...";
@@ -256,7 +254,6 @@
         function initAIAndCamera() {
             initCamera(); 
 
-            // ผูกฟังก์ชันโมเดลปัญญาประดิษฐ์ตรวจจับฝ่ามือ MediaPipe Hands
             const hands = new Hands({
                 locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
             });
@@ -300,21 +297,19 @@
             updateUIDisplay();
             generateNextQuestion();
 
-            // ตั้งเวลานับถอยหลังเกมส์
             timerId = setInterval(() => {
                 timeLeft--;
                 updateUIDisplay();
                 if (timeLeft <= 0) finalizeGame();
             }, 1000);
 
-            // วงรอบการสุ่มปล่อยกล่องของขวัญพิเศษ
             mysteryBoxTimer = setInterval(spawnMysteryBox, 12000);
         }
 
         function onHandTrackingResults(results) {
             const pointer = document.getElementById('hand-pointer');
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                const palmCenter = results.multiHandLandmarks[0][9]; // พิกัดข้อนิ้วกลางส่วนล่างเป็นจุดหลักในการชี้คลาส
+                const palmCenter = results.multiHandLandmarks[0][9]; 
                 
                 const xPixel = (1 - palmCenter.x) * window.innerWidth;
                 const yPixel = palmCenter.y * window.innerHeight;
@@ -348,7 +343,6 @@
                 }
             } else resetHoverState();
 
-            // ตรวจสอบการชนของมือกับกล่องโบนัส
             if (mBox.style.display === 'block') {
                 const rectBox = mBox.getBoundingClientRect();
                 if (hx >= rectBox.left && hx <= rectBox.right && hy >= rectBox.top && hy <= rectBox.bottom) collectBonusBox();
