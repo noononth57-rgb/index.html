@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>เก่งคณิต คิดสนุก - เรื่องเซต</title>
     
+    <!-- ไลบรารี MediaPipe สำหรับ AI ตรวจจับฝ่ามือผ่านกล้อง WebCam -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.1/hands.js" crossorigin="anonymous"></script>
 
@@ -14,10 +15,10 @@
         * { box-sizing: border-box; font-family: 'Sarabun', sans-serif; user-select: none; }
         body { margin: 0; overflow: hidden; background-color: #222; color: #333; }
 
-        /* พื้นหลังกล้อง WebCam เต็มจอ (กลับด้านให้เหมือนกระจกเงาเล่นง่าย) */
+        /* พื้นหลังกล้อง WebCam เต็มจอ */
         #bg-video { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; transform: scaleX(-1); }
         
-        /* จุดเลเซอร์ชี้ตำแหน่งฝ่ามือตามการตรวจจับ of AI */
+        /* จุดเลเซอร์ชี้ตำแหน่งฝ่ามือตามการตรวจจับของ AI */
         #hand-pointer { position: absolute; width: 35px; height: 35px; background: rgba(255, 235, 59, 0.8); border: 3px solid #fff; border-radius: 50%; pointer-events: none; z-index: 999; display: none; transform: translate(-50%, -50%); box-shadow: 0 0 20px #ffeb3b, inset 0 0 8px #fff; }
 
         /* --- หน้าเริ่มเกม --- */
@@ -36,14 +37,13 @@
             z-index: 100; 
         }
         
-        /* สไตล์สำหรับเมนูปุ่มกดที่เป็นรูปภาพ */
         .menu-container { 
             display: flex; 
-            gap: 60px; /* ระยะความห่างซ้าย-ขวา ระหว่าง 2 ปุ่ม */
+            gap: 60px; 
             justify-content: center; 
             align-items: center; 
             position: absolute;
-            top: 70%; /* 🔥 ปรับลงมาเป็น 70% ดันปุ่มลงข้างล่างแบบเน้นๆ ไม่ให้บังตัวหนังสือแน่นอนครับ! */
+            top: 70%; 
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 110;
@@ -55,13 +55,19 @@
             transition: transform 0.1s, filter 0.1s;
             filter: drop-shadow(0px 8px 0px rgba(0,0,0,0.3)); 
         }
-        .menu-btn-img:hover { 
-            transform: scale(1.08); 
-        }
-        .menu-btn-img:active { 
-            transform: scale(0.95); 
-            filter: drop-shadow(0px 3px 0px rgba(0,0,0,0.3));
-        }
+        .menu-btn-img:hover { transform: scale(1.08); }
+        .menu-btn-img:active { transform: scale(0.95); filter: drop-shadow(0px 3px 0px rgba(0,0,0,0.3)); }
+
+        /* --- หน้าต่างป๊อปอัพฟอร์มกรอกชื่อนักเรียน --- */
+        #register-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 140; justify-content: center; align-items: center; }
+        .register-card { background: white; border-radius: 30px; width: 480px; padding: 35px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); text-align: center; }
+        .register-title { font-size: 1.8rem; font-weight: bold; color: #4a148c; margin-bottom: 20px; }
+        .form-group { text-align: left; margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 1.1rem; font-weight: bold; color: #555; margin-bottom: 6px; }
+        .form-group input { width: 100%; padding: 12px 15px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 12px; outline: none; user-select: text; }
+        .form-group input:focus { border-color: #4a148c; }
+        .btn-submit-reg { background: #ff9800; color: white; border: none; padding: 12px 40px; font-size: 1.3rem; font-weight: bold; border-radius: 15px; cursor: pointer; box-shadow: 0 5px 0 #e65100; width: 100%; margin-top: 10px; }
+        .btn-submit-reg:active { transform: translateY(4px); box-shadow: none; }
 
         /* หน้าต่างป๊อปอัพควบคุมการเปิดกล้อง */
         #how-to-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 150; justify-content: center; align-items: center; }
@@ -69,24 +75,8 @@
         .modal-title { font-size: 2.3rem; font-weight: bold; color: #4a148c; margin-bottom: 20px; }
         .modal-list { text-align: left; font-size: 1.3rem; line-height: 1.8; margin-bottom: 30px; color: #4b5563; }
         
-        /* ปุ่มกากบาทปิดหน้าต่างป๊อปอัพ */
-        .close-modal-btn {
-            position: absolute;
-            top: 20px;
-            right: 25px;
-            background: none;
-            border: none;
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #aaa;
-            cursor: pointer;
-            transition: color 0.2s, transform 0.1s;
-            line-height: 1;
-        }
-        .close-modal-btn:hover {
-            color: #ef4444; 
-            transform: scale(1.15);
-        }
+        .close-modal-btn { position: absolute; top: 20px; right: 25px; background: none; border: none; font-size: 1.8rem; font-weight: bold; color: #aaa; cursor: pointer; line-height: 1; }
+        .close-modal-btn:hover { color: #ef4444; transform: scale(1.15); }
 
         .modal-btn-group { display: flex; justify-content: center; gap: 20px; }
         .modal-btn { padding: 15px 35px; font-size: 1.3rem; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; color: white; box-shadow: 0 5px 0 rgba(0,0,0,0.2); }
@@ -96,51 +86,76 @@
         /* --- หน้าจอหลักระหว่างเล่นเกม --- */
         #game-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
         
-        /* ไอคอนสถิติด้านบนซ้ายแบบตลับแคปซูล */
         .top-left-ui { position: absolute; top: 25px; left: 25px; display: flex; gap: 15px; }
         .stat-pill { background: #fffdf0; padding: 10px 22px; border-radius: 30px; font-size: 22px; font-weight: bold; display: flex; align-items: center; gap: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.15); border: 1px solid #ffeb3b; }
         
-        /* ปุ่มหน้าแรกและปุ่มหยุดด้านบนขวา */
         .top-right-ui { position: absolute; top: 25px; right: 25px; display: flex; gap: 15px; }
         .icon-btn { background: #fffdf0; border: 1px solid #ccc; width: 55px; height: 55px; border-radius: 15px; font-size: 24px; cursor: pointer; box-shadow: 0 6px 12px rgba(0,0,0,0.15); display: flex; justify-content: center; align-items: center; }
 
-        /* กล่องข้อความโจทย์ขนาดใหญ่ตรงกลางด้านบน */
         .question-box { background: white; padding: 35px 70px; border-radius: 25px; font-size: 55px; font-weight: bold; color: #2d2d6b; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: absolute; top: 15%; left: 50%; transform: translateX(-50%); white-space: nowrap; text-align: center; min-width: 450px; }
         .question-box span { color: #29b6f6; }
 
-        /* ปุ่มคำตอบวงกลมขนาดใหญ่ฝั่งซ้ายและขวาด้านล่าง */
         .choice-btn { width: 180px; height: 180px; border-radius: 50%; border: none; font-size: 65px; font-weight: bold; color: white; position: absolute; bottom: 15%; box-shadow: 0 12px 24px rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center; transition: transform 0.2s; }
         .choice-btn.ai-hovered { transform: scale(1.18); box-shadow: 0 0 35px #ffeb3b; }
         .btn-green { background: radial-gradient(circle at 30% 30%, #66bb6a, #4caf50); left: 10%; }
         .btn-blue { background: radial-gradient(circle at 30% 30%, #4fc3f7, #0288d1); right: 10%; }
 
-        /* กล่องของขวัญไอเทมลับสุ่มเกิด */
         #mystery-box { position: absolute; font-size: 65px; display: none; cursor: pointer; z-index: 50; animation: bounce 1s infinite alternate; }
         @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
 
-        /* ตัวแจ้งเตือนตอบถูก/ผิดตรงกลางจอ */
         #feedback-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 180px; display: none; z-index: 90; text-shadow: 0 10px 20px rgba(0,0,0,0.3); }
 
         /* --- หน้าจอสรุปคะแนนผู้เล่น --- */
-        #end-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); color: white; flex-direction: column; justify-content: center; align-items: center; z-index: 200; }
-        .end-card { background: #ffffff; color: #333; padding: 45px; border-radius: 30px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.5); width: 450px; }
-        .restart-btn { background: #ffeb3b; color: #4a148c; border: none; padding: 15px 45px; font-size: 1.6rem; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 6px 0 #f57c00; margin-top: 25px; transition: 0.1s; }
+        #end-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); color: white; flex-direction: column; justify-content: center; align-items: center; z-index: 200; overflow-y: auto; padding: 20px 0; }
+        .end-card { background: #ffffff; color: #333; padding: 35px; border-radius: 30px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.5); width: 650px; max-width: 90%; }
+        .restart-btn { background: #ffeb3b; color: #4a148c; border: none; padding: 12px 35px; font-size: 1.4rem; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 6px 0 #f57c00; margin-top: 15px; transition: 0.1s; margin-right: 10px; }
         .restart-btn:active { transform: translateY(6px); box-shadow: none; }
+        .clear-btn { background: #ef4444; color: white; border: none; padding: 12px 25px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 6px 0 #b91c1c; margin-top: 15px; transition: 0.1s; }
+        .clear-btn:active { transform: translateY(6px); box-shadow: none; }
+
+        /* สไตล์ตารางสรุปคะแนนของห้องเรียน */
+        .leaderboard-box { margin-top: 25px; max-height: 250px; overflow-y: auto; border: 1px solid #eee; border-radius: 15px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; text-align: left; }
+        th { background: #4a148c; color: white; padding: 10px; font-size: 16px; position: sticky; top: 0; }
+        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 15px; }
+        tr:nth-child(even) { background: #f9f9f9; }
     </style>
 </head>
 <body>
 
+    <!-- พื้นหลังวิดีโอกล้องและการชี้จุดตำแหน่งมือ -->
     <video id="bg-video" autoplay playsinline muted style="display:none;"></video>
     <div id="hand-pointer"></div>
 
+    <!-- หน้าแรกเริ่มเกม -->
     <div id="start-screen">
         <div class="menu-container">
-            <img src="4.png" class="menu-btn-img" onclick="openInstruction('membership')" alt="การเป็นสมาชิก">
-            
-            <img src="3.png" class="menu-btn-img" onclick="openInstruction('subset')" alt="การเป็นสับเซต">
+            <img src="4.png" class="menu-btn-img" onclick="openRegisterModal('membership')" alt="การเป็นสมาชิก">
+            <img src="3.png" class="menu-btn-img" onclick="openRegisterModal('subset')" alt="การเป็นสับเซต">
         </div>
     </div>
 
+    <!-- หน้าต่างป๊อปอัพ บังคับกรอก ชื่อ ชั้น เลขที่ -->
+    <div id="register-modal">
+        <div class="register-card">
+            <div class="register-title">ลงทะเบียนผู้เล่น 📝</div>
+            <div class="form-group">
+                <label>ชื่อ - นามสกุล:</label>
+                <input type="text" id="student-name" placeholder="เช่น เด็กชายสมชาย ตั้งใจเรียน" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>ชั้น / ห้อง:</label>
+                <input type="text" id="student-class" placeholder="เช่น ม.4/1" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>เลขที่:</label>
+                <input type="number" id="student-no" placeholder="เช่น 5" min="1" autocomplete="off">
+            </div>
+            <button class="btn-submit-reg" onclick="submitRegistration()">บันทึกข้อมูล & ถัดไป ➡️</button>
+        </div>
+    </div>
+
+    <!-- หน้าป๊อปอัพควบคุมสิทธิ์กล้องก่อนเข้าเกม -->
     <div id="how-to-modal">
         <div class="modal-card">
             <button class="close-modal-btn" onclick="closeModal()">✖</button>
@@ -157,6 +172,7 @@
         </div>
     </div>
 
+    <!-- หน้าอินเตอร์เฟสหลักระหว่างการเล่นเกม -->
     <div id="game-screen">
         <div class="top-left-ui">
             <div class="stat-pill">🪙 คะแนน: <span id="scoreDisplay">0</span></div>
@@ -178,28 +194,53 @@
         <div style="position: absolute; bottom: 15px; width: 100%; text-align: center; color: white; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); font-size: 16px;">โดย เพจคุณครูใจดี</div>
     </div>
 
+    <!-- หน้าสรุปผลคะแนนเมื่อสิ้นสุดเกมพร้อมตารางสรุปผลห้องเรียน -->
     <div id="end-screen">
         <div class="end-card">
-            <h2 style="font-size: 2.5rem; margin-top:0; color:#4a148c;">สิ้นสุดการท้าทาย!</h2>
-            <p style="font-size: 1.4rem; margin: 10px 0;">ตอบโจทย์ไปทั้งหมด: <span id="finalQuestions" style="color:#e91e63; font-weight:bold;">0</span> ข้อ</p>
-            <p style="font-size: 1.6rem; margin: 10px 0;">คะแนนรวมสะสม: <span id="finalScore" style="color: #4caf50; font-weight: bold; font-size: 3.2rem;">0</span></p>
-            <button class="restart-btn" onclick="location.reload()">ย้อนกลับไปหน้าแรก</button>
+            <h2 style="font-size: 2.3rem; margin-top:0; color:#4a148c; margin-bottom: 5px;">สิ้นสุดการท้าทาย!</h2>
+            <p style="font-size: 1.2rem; margin: 5px 0; color: #555;">ผู้เล่น: <span id="player-display" style="font-weight: bold; color: #0288d1;"></span></p>
+            <p style="font-size: 1.2rem; margin: 5px 0;">ตอบโจทย์ไปทั้งหมด: <span id="finalQuestions" style="color:#e91e63; font-weight:bold;">0</span> ข้อ</p>
+            <p style="font-size: 1.4rem; margin: 5px 0;">คะแนนรวมสะสม: <span id="finalScore" style="color: #4caf50; font-weight: bold; font-size: 2.8rem;">0</span></p>
+            
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <h3 style="margin: 0; color: #4a148c; text-align: left;">📊 ตารางสรุปคะแนนภายในห้องเรียน</h3>
+            
+            <div class="leaderboard-box">
+                <table id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>อันดับ</th>
+                            <th>เลขที่</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th>ชั้น</th>
+                            <th>คะแนนที่ได้</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-tbody">
+                        <!-- รายชื่อและคะแนนจะถูกใส่ตรงนี้อัตโนมัติ -->
+                    </tbody>
+                </table>
+            </div>
+
+            <button class="restart-btn" onclick="location.reload()">เล่นใหม่อีกครั้ง</button>
+            <button class="clear-btn" onclick="clearClassScores()">ล้างคะแนนทั้งห้อง</button>
         </div>
     </div>
 
+    <!-- ไฟล์เสียง Effect -->
     <audio id="bgmSound" src="https://assets.mixkit.co/active_storage/sfx/135/135-preview.mp3" loop preload="auto"></audio>
     <audio id="correctSound" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto"></audio>
     <audio id="wrongSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3" preload="auto"></audio>
     <audio id="bonusSound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" preload="auto"></audio>
 
     <script>
-        // --- ระบบสร้างชุดคำถามคณิตศาสตร์เรื่องเซตระดับท้าทายจำนวน 100 ข้อคละความยาก ---
+        // --- 🛠️ แก้ไขบั๊กลูปนรกเรียบร้อยแล้ว: สร้างโจทย์จำลองแบบวนซ้ำรูปแบบได้ครบ 100 ข้อแน่นอน ไม่ค้างชัวร์ครับคุณครู ---
         function generateQuestionsPool(mode) {
             const pool = [];
             const setsLevel1 = ["{1, 2, 3}", "{2, 3, 4}", "{a, b, c}"];
             const setsLevel2 = ["{1, {2}, 3}", "{{1}, 2, 3}", "{0, 1, 2}", "{1, 2, {1, 2}}"];
             
-            while(pool.length < 100) {
+            for (let i = 0; i < 100; i++) {
                 let qText, isTrue;
                 let type = Math.floor(Math.random() * 4); 
 
@@ -235,10 +276,9 @@
                 
                 if(askNegative) {
                     correctAns = (correctAns === "∈" ? "∉" : (correctAns === "∉" ? "∈" : (correctAns === "⊂" ? "⊄" : "⊂")));
-                    isTrue = !isTrue;
                 }
 
-                if(!pool.some(p => p.q === qText)) pool.push({ q: qText, a: correctAns });
+                pool.push({ q: qText, a: correctAns });
             }
             return pool.sort(() => Math.random() - 0.5); 
         }
@@ -247,9 +287,34 @@
         let leftSymbol = '', rightSymbol = '', currentHoveredButton = null, hoverStartTime = 0;
         const requiredHoverTime = 550; 
 
-        function openInstruction(mode) {
+        // ข้อมูลของนักเรียนที่กรอกเข้าเล่น
+        let studentData = { name: '', class: '', no: '' };
+
+        function openRegisterModal(mode) {
             chosenMode = mode;
-            document.getElementById('selected-mode-text').innerText = (mode === 'membership') ? "การเป็นสมาชิก (∈, ∉)" : "การเป็นสับเซต (⊂, ⊄)";
+            document.getElementById('register-modal').style.display = 'flex';
+        }
+
+        function submitRegistration() {
+            const nameInput = document.getElementById('student-name').value.trim();
+            const classInput = document.getElementById('student-class').value.trim();
+            const noInput = document.getElementById('student-no').value.trim();
+
+            if (!nameInput || !classInput || !noInput) {
+                alert("คุณครูบังคับให้กรอกข้อมูลให้ครบถ้วนก่อนเข้าเล่นนะครับเด็กๆ ! 📋");
+                return;
+            }
+
+            studentData.name = nameInput;
+            studentData.class = classInput;
+            studentData.no = noInput;
+
+            document.getElementById('register-modal').style.display = 'none';
+            openInstruction();
+        }
+
+        function openInstruction() {
+            document.getElementById('selected-mode-text').innerText = (chosenMode === 'membership') ? "การเป็นสมาชิก (∈, ∉)" : "การเป็นสับเซต (⊂, ⊄)";
             document.getElementById('how-to-modal').style.display = 'flex';
         }
 
@@ -437,14 +502,71 @@
             score += 20; updateUIDisplay();
         }
 
+        // --- ระบบบันทึกคะแนนและแสดงผลตารางสรุปผลภายในห้องเรียน ---
         function finalizeGame() {
             clearInterval(timerId); clearInterval(mysteryBoxTimer);
             document.getElementById('bgmSound').pause();
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('end-screen').style.display = 'flex';
+            
+            // แสดงข้อมูลผู้เล่นปัจจุบัน
+            document.getElementById('player-display').innerText = `เลขที่ ${studentData.no} - ${studentData.name} (${studentData.class})`;
             document.getElementById('finalScore').innerText = score;
             document.getElementById('finalQuestions').innerText = questionCount - 1; 
             document.getElementById('hand-pointer').style.display = 'none';
+
+            // บันทึกคะแนนลง LocalStorage
+            saveStudentScore(studentData.name, studentData.class, studentData.no, score);
+            // โหลดตารางคะแนนขึ้นมาแสดงผล
+            displayLeaderboard();
+        }
+
+        function saveStudentScore(name, sClass, no, finalScore) {
+            let allScores = JSON.parse(localStorage.getItem('classroom_set_scores')) || [];
+            
+            // เพิ่มข้อมูลใหม่เข้าไป
+            allScores.push({
+                name: name,
+                class: sClass,
+                no: parseInt(no),
+                score: finalScore,
+                timestamp: Date.now()
+            });
+
+            // เรียงคะแนนจากมากไปน้อย (ถ้าเท่ากันให้ดูตามเลขที่นร.)
+            allScores.sort((a, b) => b.score - a.score || a.no - b.no);
+            
+            localStorage.setItem('classroom_set_scores', JSON.stringify(allScores));
+        }
+
+        function displayLeaderboard() {
+            let allScores = JSON.parse(localStorage.getItem('classroom_set_scores')) || [];
+            const tbody = document.getElementById('leaderboard-tbody');
+            tbody.innerHTML = '';
+
+            if (allScores.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">ยังไม่มีบันทึกข้อมูลคะแนนในห้องนี้</td></tr>`;
+                return;
+            }
+
+            allScores.forEach((student, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-weight:bold; color:#ff9800;">${index + 1}</td>
+                    <td>${student.no}</td>
+                    <td>${student.name}</td>
+                    <td>${student.class}</td>
+                    <td style="font-weight:bold; color:#4caf50;">${student.score}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function clearClassScores() {
+            if (confirm("คุณครูแน่ใจใช่ไหมครับว่าต้องการ 'ล้างข้อมูลคะแนนทั้งหมดภายในห้อง' เพื่อเริ่มเก็บคะแนนกลุ่มใหม่?")) {
+                localStorage.removeItem('classroom_set_scores');
+                displayLeaderboard();
+            }
         }
     </script>
 </body>
