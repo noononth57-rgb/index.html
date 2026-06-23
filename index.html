@@ -20,7 +20,7 @@
         /* จุดเลเซอร์ชี้ตำแหน่งฝ่ามือตามการตรวจจับของ AI */
         #hand-pointer { position: absolute; width: 35px; height: 35px; background: rgba(255, 235, 59, 0.8); border: 3px solid #fff; border-radius: 50%; pointer-events: none; z-index: 999; display: none; transform: translate(-50%, -50%); box-shadow: 0 0 20px #ffeb3b, inset 0 0 8px #fff; }
 
-        /* --- หน้าเริ่มเกม (เหลือเฉพาะภาพพื้นหลังและปุ่มรูปภาพตรงกลางเด้งดึ๋ง) --- */
+        /* --- หน้าเริ่มเกม (ปรับขนาดปุ่มรูปภาพใหม่ให้เล็กพอดี) --- */
         #start-screen { 
             position: absolute; 
             top: 0; 
@@ -37,27 +37,47 @@
         }
         
         /* สไตล์สำหรับเมนูปุ่มกดที่เป็นรูปภาพ */
-        .menu-container { display: flex; gap: 50px; justify-content: center; align-items: center; }
+        .menu-container { display: flex; gap: 40px; justify-content: center; align-items: center; }
         .menu-btn-img { 
-            width: 10px; /* ครูสามารถปรับขนาดความกว้างของปุ่มรูปภาพ เพิ่ม/ลด ได้ตรงนี้เลยครับ */
-            height: 10px; 
+            width: 210px; /* ปรับลดขนาดลงมาจาก 260px ให้เล็กพอดีสมส่วน */
+            height: auto; 
             cursor: pointer; 
             transition: transform 0.1s, filter 0.1s;
-            filter: drop-shadow(0px 10px 0px rgba(0,0,0,0.3)); 
+            filter: drop-shadow(0px 8px 0px rgba(0,0,0,0.3)); 
         }
         .menu-btn-img:hover { 
-            transform: scale(1.08); /* ขยายขึ้นเล็กน้อยเวลาเมาส์ชี้ */
+            transform: scale(1.08); 
         }
         .menu-btn-img:active { 
-            transform: scale(0.95); /* ยุบตัวลงเวลาเล็งกด */
+            transform: scale(0.95); 
             filter: drop-shadow(0px 3px 0px rgba(0,0,0,0.3));
         }
 
         /* หน้าต่างป๊อปอัพควบคุมการเปิดกล้อง */
         #how-to-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 150; justify-content: center; align-items: center; }
-        .modal-card { background: white; border-radius: 30px; width: 550px; padding: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); text-align: center; }
+        .modal-card { background: white; border-radius: 30px; width: 550px; padding: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); text-align: center; position: relative; } /* ใส่ position relative เพื่อจัดปุ่มกากบาท */
         .modal-title { font-size: 2.3rem; font-weight: bold; color: #4a148c; margin-bottom: 20px; }
         .modal-list { text-align: left; font-size: 1.3rem; line-height: 1.8; margin-bottom: 30px; color: #4b5563; }
+        
+        /* ปุ่มกากบาทปิดหน้าต่างป๊อปอัพ */
+        .close-modal-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.1s;
+            line-height: 1;
+        }
+        .close-modal-btn:hover {
+            color: #ef4444; /* ชี้แล้วเปลี่ยนเป็นสีแดง */
+            transform: scale(1.15);
+        }
+
         .modal-btn-group { display: flex; justify-content: center; gap: 20px; }
         .modal-btn { padding: 15px 35px; font-size: 1.3rem; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; color: white; box-shadow: 0 5px 0 rgba(0,0,0,0.2); }
         .btn-camera-init { background: #0288d1; }
@@ -113,6 +133,8 @@
 
     <div id="how-to-modal">
         <div class="modal-card">
+            <button class="close-modal-btn" onclick="closeModal()">✖</button>
+            
             <div class="modal-title">เตรียมความพร้อม 🎮</div>
             <div class="modal-list">
                 <b>1. โหมดการเล่น:</b> <span id="selected-mode-text" style="color:#0288d1; font-weight:bold;"></span><br>
@@ -188,8 +210,6 @@
                 } else { 
                     if (type === 0) { 
                         qText = `{1} _ ${setsLevel1[0]}`; isTrue = true;
-                    } else if (type === 1) { 
-                        qText = `1 _ ${setsLevel1[0]}`; isTrue = false;
                     } else if (type === 2) { 
                         let subType = Math.random();
                         if(subType > 0.5) { qText = `0 _ ${setsLevel2[0]}`; isTrue = false; }
@@ -222,6 +242,11 @@
             chosenMode = mode;
             document.getElementById('selected-mode-text').innerText = (mode === 'membership') ? "การเป็นสมาชิก (∈, ∉)" : "การเป็นสับเซต (⊂, ⊄)";
             document.getElementById('how-to-modal').style.display = 'flex';
+        }
+
+        // ฟังก์ชันสำหรับกดกากบาทเพื่อปิดหน้าต่างป๊อปอัพ
+        function closeModal() {
+            document.getElementById('how-to-modal').style.display = 'none';
         }
 
         async function initCamera() {
