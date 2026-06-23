@@ -36,20 +36,20 @@
             z-index: 100; 
         }
         
-        /* สไตล์สำหรับเมนูปุ่มกดที่เป็นรูปภาพ (ปรับให้ล็อกตำแหน่งลงมาทับกรอบไม้ของพื้นหลังพอดี) */
+        /* สไตล์สำหรับเมนูปุ่มกดที่เป็นรูปภาพ */
         .menu-container { 
             display: flex; 
             gap: 60px; /* ระยะความห่างซ้าย-ขวา ระหว่าง 2 ปุ่ม */
             justify-content: center; 
             align-items: center; 
             position: absolute;
-            top: 20%; /* ✨ ดันตำแหน่งปุ่มลงมาตรงช่องกรอบไม้พอดี (ครูสามารถปรับเพิ่ม/ลด % ตรงนี้เพื่อเลื่อนขึ้นลงได้ครับ) */
+            top: 70%; /* 🔥 ปรับลงมาเป็น 70% ดันปุ่มลงข้างล่างแบบเน้นๆ ไม่ให้บังตัวหนังสือแน่นอนครับ! */
             left: 50%;
-            transform: translate(-50%, -25%);
+            transform: translate(-50%, -50%);
             z-index: 110;
         }
         .menu-btn-img { 
-            width: 175px; /* ✨ ปรับขนาดปุ่มให้พอดีกับกรอบไม้บนรูปพื้นหลัง (ปรับขนาดได้ระหว่าง 160px - 190px ตามใจชอบครับ) */
+            width: 175px; 
             height: auto; 
             cursor: pointer; 
             transition: transform 0.1s, filter 0.1s;
@@ -144,7 +144,6 @@
     <div id="how-to-modal">
         <div class="modal-card">
             <button class="close-modal-btn" onclick="closeModal()">✖</button>
-            
             <div class="modal-title">เตรียมความพร้อม 🎮</div>
             <div class="modal-list">
                 <b>1. โหมดการเล่น:</b> <span id="selected-mode-text" style="color:#0288d1; font-weight:bold;"></span><br>
@@ -191,5 +190,262 @@
     <audio id="bgmSound" src="https://assets.mixkit.co/active_storage/sfx/135/135-preview.mp3" loop preload="auto"></audio>
     <audio id="correctSound" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto"></audio>
     <audio id="wrongSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3" preload="auto"></audio>
-    <audio id="bonusSound" src="https://assets
-        
+    <audio id="bonusSound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" preload="auto"></audio>
+
+    <script>
+        // --- ระบบสร้างชุดคำถามคณิตศาสตร์เรื่องเซตระดับท้าทายจำนวน 100 ข้อคละความยาก ---
+        function generateQuestionsPool(mode) {
+            const pool = [];
+            const setsLevel1 = ["{1, 2, 3}", "{2, 3, 4}", "{a, b, c}"];
+            const setsLevel2 = ["{1, {2}, 3}", "{{1}, 2, 3}", "{0, 1, 2}", "{1, 2, {1, 2}}"];
+            
+            while(pool.length < 100) {
+                let qText, isTrue;
+                let type = Math.floor(Math.random() * 4); 
+
+                if (mode === 'membership') {
+                    if (type === 0) { 
+                        qText = `1 _ ${setsLevel1[Math.floor(Math.random()*setsLevel1.length)]}`; isTrue = true;
+                    } else if (type === 1) { 
+                        qText = `{1} _ ${setsLevel1[0]}`; isTrue = false;
+                    } else if (type === 2) { 
+                        qText = `{1} _ ${setsLevel2[1]}`; isTrue = true;
+                    } else { 
+                        let subType = Math.random();
+                        if(subType > 0.6) { qText = `0 _ {1, 2, 3}`; isTrue = false; }
+                        else if(subType > 0.3) { qText = `0 _ {0, 1}`; isTrue = true; }
+                        else { qText = `{0} _ {0, {0}}`; isTrue = true; }
+                    }
+                } else { 
+                    if (type === 0) { 
+                        qText = `{1} _ ${setsLevel1[0]}`; isTrue = true;
+                    } else if (type === 2) { 
+                        let subType = Math.random();
+                        if(subType > 0.5) { qText = `0 _ ${setsLevel2[0]}`; isTrue = false; }
+                        else { qText = `{1, 2} _ {1, 2, 3}`; isTrue = true; }
+                    } else { 
+                        let subType = Math.random();
+                        if(subType > 0.5) { qText = `{{1}} _ {{1}, 2, 3}`; isTrue = true; }
+                        else { qText = `{1, 2} _ {{1, 2}, 3}`; isTrue = false; }
+                    }
+                }
+
+                let askNegative = Math.random() > 0.5;
+                let correctAns = mode === 'membership' ? (isTrue ? "∈" : "∉") : (isTrue ? "⊂" : "⊄");
+                
+                if(askNegative) {
+                    correctAns = (correctAns === "∈" ? "∉" : (correctAns === "∉" ? "∈" : (correctAns === "⊂" ? "⊄" : "⊂")));
+                    isTrue = !isTrue;
+                }
+
+                if(!pool.some(p => p.q === qText)) pool.push({ q: qText, a: correctAns });
+            }
+            return pool.sort(() => Math.random() - 0.5); 
+        }
+
+        let chosenMode = '', availableQuestions = [], currentQuestion = null, score = 0, timeLeft = 90, questionCount = 1, timerId = null, mysteryBoxTimer = null, isCameraActive = false, canProcessAnswer = true;
+        let leftSymbol = '', rightSymbol = '', currentHoveredButton = null, hoverStartTime = 0;
+        const requiredHoverTime = 550; 
+
+        function openInstruction(mode) {
+            chosenMode = mode;
+            document.getElementById('selected-mode-text').innerText = (mode === 'membership') ? "การเป็นสมาชิก (∈, ∉)" : "การเป็นสับเซต (⊂, ⊄)";
+            document.getElementById('how-to-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('how-to-modal').style.display = 'none';
+        }
+
+        async function initCamera() {
+            const camBtn = document.getElementById('cam-btn');
+            camBtn.innerText = "⏳ ระบบกำลังเชื่อมต่อกล้อง...";
+            camBtn.style.pointerEvents = "none";
+
+            const videoElement = document.getElementById('bg-video');
+            try {
+                const cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                videoElement.srcObject = cameraStream;
+                isCameraActive = true;
+                videoElement.style.display = "block";
+                document.getElementById('hand-pointer').style.display = "block";
+                camBtn.innerText = "✅ เปิดใช้งานกล้องสำเร็จ";
+                camBtn.style.background = "#78909c";
+                
+                const startBtn = document.getElementById('start-btn');
+                startBtn.style.opacity = "1";
+                startBtn.style.pointerEvents = "auto";
+            } catch (err) {
+                alert("ไม่สามารถเข้าถึงกล้องได้ กรุณาตรวจสอบการอนุญาตสิทธิ์การเข้าถึงกล้องบนเบราว์เซอร์");
+                console.error(err);
+                camBtn.innerText = "⚠️ การเชื่อมต่อกล้องล้มเหลว";
+                camBtn.style.pointerEvents = "auto";
+                camBtn.style.background = "#d32f2f";
+            }
+        }
+
+        function initAIAndCamera() {
+            initCamera(); 
+
+            const hands = new Hands({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+            });
+            hands.setOptions({
+                maxNumHands: 1,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.6,
+                minTrackingConfidence: 0.6
+            });
+            hands.onResults(onHandTrackingResults);
+
+            const videoElement = document.getElementById('bg-video');
+            const camera = new Camera(videoElement, {
+                onFrame: async () => {
+                    if (isCameraActive) await hands.send({ image: videoElement });
+                },
+                width: 1280,
+                height: 720
+            });
+            camera.start();
+        }
+
+        function realStartGame() {
+            document.getElementById('bgmSound').play().catch(e => console.log("Audio play deferred"));
+            
+            availableQuestions = generateQuestionsPool(chosenMode);
+            
+            if(chosenMode === 'membership') {
+                leftSymbol = "∈"; rightSymbol = "∉";
+            } else {
+                leftSymbol = "⊂"; rightSymbol = "⊄";
+            }
+
+            document.getElementById('btn-left').innerText = leftSymbol;
+            document.getElementById('btn-right').innerText = rightSymbol;
+
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('how-to-modal').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+
+            updateUIDisplay();
+            generateNextQuestion();
+
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateUIDisplay();
+                if (timeLeft <= 0) finalizeGame();
+            }, 1000);
+
+            mysteryBoxTimer = setInterval(spawnMysteryBox, 12000);
+        }
+
+        function onHandTrackingResults(results) {
+            const pointer = document.getElementById('hand-pointer');
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const palmCenter = results.multiHandLandmarks[0][9]; 
+                
+                const xPixel = (1 - palmCenter.x) * window.innerWidth;
+                const yPixel = palmCenter.y * window.innerHeight;
+
+                pointer.style.left = `${xPixel}px`;
+                pointer.style.top = `${yPixel}px`;
+
+                if (document.getElementById('game-screen').style.display === 'block' && canProcessAnswer) {
+                    checkPointerCollisions(xPixel, yPixel);
+                }
+            }
+        }
+
+        function checkPointerCollisions(hx, hy) {
+            const btnLeft = document.getElementById('btn-left'), btnRight = document.getElementById('btn-right'), mBox = document.getElementById('mystery-box');
+            const rectLeft = btnLeft.getBoundingClientRect(), rectRight = btnRight.getBoundingClientRect();
+            let insideAnyButton = null;
+
+            if (hx >= rectLeft.left && hx <= rectLeft.right && hy >= rectLeft.top && hy <= rectLeft.bottom) insideAnyButton = 'left';
+            else if (hx >= rectRight.left && hx <= rectRight.right && hy >= rectRight.top && hy <= rectRight.bottom) insideAnyButton = 'right';
+
+            if (insideAnyButton) {
+                if (currentHoveredButton !== insideAnyButton) {
+                    currentHoveredButton = insideAnyButton; hoverStartTime = Date.now();
+                    if(insideAnyButton === 'left') btnLeft.classList.add('ai-hovered');
+                    if(insideAnyButton === 'right') btnRight.classList.add('ai-hovered');
+                } else {
+                    if (Date.now() - hoverStartTime >= requiredHoverTime) {
+                        executeAnswerSelection(insideAnyButton); resetHoverState();
+                    }
+                }
+            } else resetHoverState();
+
+            if (mBox.style.display === 'block') {
+                const rectBox = mBox.getBoundingClientRect();
+                if (hx >= rectBox.left && hx <= rectBox.right && hy >= rectBox.top && hy <= rectBox.bottom) collectBonusBox();
+            }
+        }
+
+        function resetHoverState() {
+            document.getElementById('btn-left').classList.remove('ai-hovered'); document.getElementById('btn-right').classList.remove('ai-hovered');
+            currentHoveredButton = null;
+        }
+
+        function executeAnswerSelection(side) {
+            canProcessAnswer = false;
+            const chosenAnswer = (side === 'left') ? leftSymbol : rightSymbol;
+            const feedback = document.getElementById('feedback-overlay');
+            
+            if (chosenAnswer === currentQuestion.a) { 
+                score += 10; 
+                document.getElementById('correctSound').play(); 
+                feedback.innerText = "✅";
+                feedback.style.color = "#4caf50";
+            } else { 
+                document.getElementById('wrongSound').play(); 
+                feedback.innerText = "❌"; 
+                feedback.style.color = "#f44336"; 
+            }
+
+            feedback.style.display = "block";
+            setTimeout(() => {
+                feedback.style.display = "none";
+                questionCount++;
+                if (questionCount > 100) finalizeGame();
+                else { canProcessAnswer = true; updateUIDisplay(); generateNextQuestion(); }
+            }, 600);
+        }
+
+        function generateNextQuestion() {
+            currentQuestion = availableQuestions[questionCount - 1]; 
+            document.getElementById('questionText').innerHTML = currentQuestion.q.replace("_", " &nbsp;&nbsp; ") + " <span>?</span>";
+        }
+
+        function updateUIDisplay() {
+            document.getElementById('scoreDisplay').innerText = score;
+            document.getElementById('timeDisplay').innerText = timeLeft;
+            document.getElementById('qCountDisplay').innerText = questionCount;
+        }
+
+        function spawnMysteryBox() {
+            const mBox = document.getElementById('mystery-box');
+            mBox.style.left = `${Math.floor(Math.random() * (window.innerWidth - 150)) + 50}px`;
+            mBox.style.top = `${Math.floor(Math.random() * (window.innerHeight - 350)) + 220}px`;
+            mBox.style.display = 'block';
+            setTimeout(() => { mBox.style.display = 'none'; }, 4500);
+        }
+
+        function collectBonusBox() {
+            document.getElementById('mystery-box').style.display = 'none';
+            document.getElementById('bonusSound').play();
+            score += 20; updateUIDisplay();
+        }
+
+        function finalizeGame() {
+            clearInterval(timerId); clearInterval(mysteryBoxTimer);
+            document.getElementById('bgmSound').pause();
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'flex';
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('finalQuestions').innerText = questionCount - 1; 
+            document.getElementById('hand-pointer').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
