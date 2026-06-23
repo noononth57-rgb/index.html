@@ -20,7 +20,7 @@
         /* จุดเลเซอร์ชี้ตำแหน่งฝ่ามือตามการตรวจจับของ AI */
         #hand-pointer { position: absolute; width: 35px; height: 35px; background: rgba(255, 235, 59, 0.8); border: 3px solid #fff; border-radius: 50%; pointer-events: none; z-index: 999; display: none; transform: translate(-50%, -50%); box-shadow: 0 0 20px #ffeb3b, inset 0 0 8px #fff; }
 
-        /* --- หน้าเริ่มเกม (ปรับขนาดปุ่มรูปภาพใหม่ให้เล็กพอดี) --- */
+        /* --- หน้าเริ่มเกม --- */
         #start-screen { 
             position: absolute; 
             top: 0; 
@@ -36,10 +36,16 @@
             z-index: 100; 
         }
         
-        /* สไตล์สำหรับเมนูปุ่มกดที่เป็นรูปภาพ */
-        .menu-container { display: flex; gap: 40px; justify-content: center; align-items: center; }
+        /* สไตล์สำหรับเมนูปุ่มกดที่เป็นรูปภาพ (ปรับตำแหน่งลงมาข้างล่าง) */
+        .menu-container { 
+            display: flex; 
+            gap: 40px; 
+            justify-content: center; 
+            align-items: center; 
+            margin-top: 120px; /* ✨ ดันปุ่มลงมาจากจุดกึ่งกลางจอ 120px เพื่อไม่ให้บังตัวหนังสือคำว่า เซต (SET) ครับ ครูสามารถปรับเพิ่ม/ลด ตัวเลขตรงนี้ได้ตามใจชอบเลยครับ */
+        }
         .menu-btn-img { 
-            width: 210px; /* ปรับลดขนาดลงมาจาก 260px ให้เล็กพอดีสมส่วน */
+            width: 210px; 
             height: auto; 
             cursor: pointer; 
             transition: transform 0.1s, filter 0.1s;
@@ -55,7 +61,7 @@
 
         /* หน้าต่างป๊อปอัพควบคุมการเปิดกล้อง */
         #how-to-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 150; justify-content: center; align-items: center; }
-        .modal-card { background: white; border-radius: 30px; width: 550px; padding: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); text-align: center; position: relative; } /* ใส่ position relative เพื่อจัดปุ่มกากบาท */
+        .modal-card { background: white; border-radius: 30px; width: 550px; padding: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); text-align: center; position: relative; } 
         .modal-title { font-size: 2.3rem; font-weight: bold; color: #4a148c; margin-bottom: 20px; }
         .modal-list { text-align: left; font-size: 1.3rem; line-height: 1.8; margin-bottom: 30px; color: #4b5563; }
         
@@ -74,7 +80,7 @@
             line-height: 1;
         }
         .close-modal-btn:hover {
-            color: #ef4444; /* ชี้แล้วเปลี่ยนเป็นสีแดง */
+            color: #ef4444; 
             transform: scale(1.15);
         }
 
@@ -244,7 +250,6 @@
             document.getElementById('how-to-modal').style.display = 'flex';
         }
 
-        // ฟังก์ชันสำหรับกดกากบาทเพื่อปิดหน้าต่างป๊อปอัพ
         function closeModal() {
             document.getElementById('how-to-modal').style.display = 'none';
         }
