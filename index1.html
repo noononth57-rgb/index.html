@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>เก่งคณิต คิดสนุก - สรุปผล</title>
+    
+    <!-- ไลบรารีสำหรับ AI จับฝ่ามือ (ใช้เวอร์ชันที่รองรับ Chrome ได้เสถียร) -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.1/hands.js" crossorigin="anonymous"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+
+        * { box-sizing: border-box; font-family: 'Sarabun', sans-serif; user-select: none; }
+        body { margin: 0; overflow: hidden; background-color: #333; color: #333; }
+
+        /* พื้นหลังกล้องในหน้าเล่นเกม */
+        #bg-video { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; transform: scaleX(-1); }
+        
+        /* จุดชี้เลเซอร์ตามฝ่ามือ AI */
+        #hand-pointer { position: absolute; width: 35px; height: 35px; background: rgba(255, 235, 59, 0.7); border: 3px solid #fff; border-radius: 50%; pointer-events: none; z-index: 999; display: none; transform: translate(-50%, -50%); box-shadow: 0 0 20px #ffeb3b, inset 0 0 8px #fff; }
+
+        /* --- หน้าเริ่มเกม (เปลี่ยนภาพพื้นหลังที่นี่) --- */
+        #start-screen { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            
+            /* --- ส่วนที่คุณครูแก้ไข: ใส่รูปภาพพื้นหลังที่นี่ --- */
+            /* สมมติว่าเปลี่ยนชื่อไฟล์เป็น set-bg.png แล้ว */
+            background-image: url('set-bg.png'); 
+            
+            /* หรือถ้ายังไม่เปลี่ยนชื่อไฟล์ ให้ใช้ลิงก์เต็มที่คุณครูส่งมา (ต้องตรวจสอบลิงก์อีกครั้งหากไม่แสดงผล) */
+            /* background-image: url('https://raw.githubusercontent.com/noononth57-rgb/index.html/main/ChatGPT%20Image%2022%20มิ.ย.%202569%2019_06_09.png'); */
+            
+            background-size: cover; 
+            background-position: center;
+            
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 100; 
+        }
+        
+        .game-title { font-size: 4.5rem; color: #ffeb3b; font-weight: bold; text-align: center; margin: 0; text-shadow: -3px -3px 0 #4a148c, 3px -3px 0 #4a148c, -3px 3px 0 #4a148c, 3px 3px 0 #4a148c, 0px 8px 0 #4a148c, 0px 15px 20px rgba(0,0,0,0.4); }
+        .game-subtitle { background: #d32f2f; color: #fff; padding: 10px 40px; border-radius: 20px; font-size: 1.8rem; font-weight: bold; box-shadow: 0 6px 0 #b71c1c, 0 10px 20px rgba(0,0,0,0.3); margin-top: 15px; margin-bottom: 40px; border: 3px solid #ffeb3b; }
+
+        .menu-container { display: flex; gap: 30px; }
+        .menu-card { background: white; border-radius: 25px; width: 220px; height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 12px 0 #cbd5e1, 0 20px 25px rgba(0,0,0,0.25); transition: transform 0.1s; border: none; }
+        .card-icon-circle { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 4rem; font-weight: bold; box-shadow: inset 0 -6px 0 rgba(0,0,0,0.2); margin-bottom: 20px; }
+        .circle-green { background: radial-gradient(circle at 30% 30%, #81c784, #4caf50); }
+        .circle-blue { background: radial-gradient(circle at 30% 30%, #4fc3f7, #0288d1); }
+        .card-text { font-size: 1.5rem; font-weight: bold; color: #374151; }
+
+        /* --- หน้าป๊อปอัพวิธีเล่น --- */
+        #how-to-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 150; justify-content: center; align-items: center; }
+        .modal-card { background: white; border-radius: 30px; width: 600px; padding: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); text-align: center; }
+        .modal-title { font-size: 2.5rem; font-weight: bold; color: #4a148c; margin-bottom: 20px; }
+        .modal-list { text-align: left; font-size: 1.3rem; line-height: 1.8; margin-bottom: 30px; color: #4b5563; }
+        .modal-btn-group { display: flex; justify-content: center; gap: 20px; }
+        .modal-btn { padding: 15px 35px; font-size: 1.3rem; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; color: white; box-shadow: 0 5px 0 rgba(0,0,0,0.2); }
+        .btn-camera-init { background: #0288d1; }
+        .btn-game-start { background: #4caf50; opacity: 0.6; pointer-events: none; } /* เริ่มแรกจะล็อคไว้จนกว่าจะกดเปิดกล้อง */
+
+        /* --- หน้าเล่นเกม --- */
+        #game-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
+        .top-left-ui { position: absolute; top: 20px; left: 20px; display: flex; gap: 15px; }
+        .stat-pill { background: #fdf5e6; padding: 10px 20px; border-radius: 30px; font-size: 24px; font-weight: bold; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .top-right-ui { position: absolute; top: 20px; right: 20px; }
+        .icon-btn { background: #fdf5e6; border: none; width: 55px; height: 55px; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; }
+
+        .question-box { background: white; padding: 25px 50px; border-radius: 20px; font-size: 50px; font-weight: bold; color: #311b92; box-shadow: 0 8px 25px rgba(0,0,0,0.2); position: absolute; top: 15%; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+        .question-box span { color: #29b6f6; }
+
+        /* ปุ่มคำตอบ ซ้าย-ขวา */
+        .choice-btn { width: 160px; height: 160px; border-radius: 50%; border: none; font-size: 70px; font-weight: bold; color: white; position: absolute; bottom: 15%; box-shadow: 0 10px 20px rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center; transition: transform 0.2s; }
+        .choice-btn.ai-hovered { transform: scale(1.15); box-shadow: 0 0 30px #ffeb3b; }
+        .btn-orange { background: radial-gradient(circle at 30% 30%, #ffb74d, #f57c00); left: 15%; }
+        .btn-blue { background: radial-gradient(circle at 30% 30%, #4fc3f7, #0288d1); right: 15%; }
+
+        /* เอฟเฟกต์ตอบถูกผิด */
+        #feedback-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 180px; display: none; z-index: 80; }
+
+        /* --- หน้าสรุปคะแนน --- */
+        #end-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); color: white; flex-direction: column; justify-content: center; align-items: center; z-index: 200; }
+        .end-card { background: #ffffff; color: #333; padding: 40px; border-radius: 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .restart-btn { background: #ffeb3b; color: #4a148c; border: none; padding: 15px 40px; font-size: 1.5rem; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 6px 0 #f57c00; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <video id="bg-video" autoplay playsinline muted style="display:none;"></video>
+    <div id="hand-pointer"></div>
+
+    <div id="start-screen">
+        <h1 class="game-title">เก่งคณิต คิดสนุก</h1>
+        <div class="game-subtitle">โหมดท้าทาย: 100 ข้อ</div>
+        <div class="menu-container">
+            <button class="menu-card" onclick="openInstruction('membership')">
+                <div class="card-icon-circle circle-green">∈</div>
+                <div class="card-text">การเป็นสมาชิก</div>
+            </button>
+            <button class="menu-card" onclick="openInstruction('subset')">
+                <div class="card-icon-circle circle-blue">⊂</div>
+                <div class="card-text">การเป็นสับเซต</div>
+            </button>
+        </div>
+    </div>
+
+    <div id="how-to-modal">
+        <div class="modal-card">
+            <div class="modal-title">วิธีเล่น 🎮</div>
+            <div class="modal-list">
+                <b>1. โหมด:</b> <span id="selected-mode-text" style="color:#0288d1; font-weight:bold;"></span><br>
+                <b>2. การตอบ:</b> ใช้ฝ่ามือเลื่อนไปบังปุ่มคำตอบค้างไว้<br>
+                <b>3. ไอเทมลับ:</b> แตะกล่องของขวัญรับ +20 คะแนน
+            </div>
+            <div class="modal-btn-group">
+                <button class="modal-btn btn-camera-init" id="cam-btn" onclick="initAIAndCamera()">📷 เปิดกล้อง</button>
+                <button class="modal-btn btn-game-start" id="start-btn" onclick="realStartGame()">▶️ เริ่มเกม</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-screen">
+        <div class="top-left-ui">
+            <div class="stat-pill">🪙 <span id="scoreDisplay">0</span></div>
+            <div class="stat-pill">⏰ <span id="timeDisplay">90</span></div>
+            <div class="stat-pill">📝 ข้อ <span id="qCountDisplay">1</span>/100</div>
+        </div>
+        <div class="top-right-ui"><button class="icon-btn" onclick="location.reload()">🏠</button></div>
+        <div id="mystery-box" style="position: absolute; font-size: 60px; display: none;">🎁</div>
+        <div class="question-box" id="questionText">A _ B <span>?</span></div>
+        <button class="choice-btn btn-orange" id="btn-left">∈</button>
+        <button class="choice-btn btn-blue" id="btn-right">∉</button>
+        <div id="feedback-overlay">✅</div>
+    </div>
+
+    <div id="end-screen">
+        <div class="end-card">
+            <h2 style="font-size: 2.5rem; margin-top:0;">หมดเวลาสนุกแล้ว!</h2>
+            <p style="font-size: 1.5rem;">ทำได้ทั้งหมด: <span id="finalQuestions" style="color:#e91e63; font-weight:bold;">0</span> ข้อ</p>
+            <p style="font-size: 1.5rem;">คะแนนรวม: <span id="finalScore" style="color: #4caf50; font-weight: bold; font-size: 3rem;">0</span> คะแนน</p>
+            <button class="restart-btn" onclick="location.reload()">เริ่มเล่นใหม่</button>
+        </div>
+    </div>
+
+    <!-- ไฟล์เสียงประกอบ (ใช้ลิงก์จากเว็บฟรี) -->
+    <audio id="bgmSound" src="https://assets.mixkit.co/active_storage/sfx/135/135-preview.mp3" loop preload="auto"></audio>
+    <audio id="correctSound" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto"></audio>
+    <audio id="wrongSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3" preload="auto"></audio>
+    <audio id="bonusSound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" preload="auto"></audio>
+
+    <script>
+        // --- ระบบสร้างโจทย์คณิตศาสตร์ 100 ข้อระดับท้าทาย ---
+        function generateQuestionsPool(mode) {
+            const pool = [];
+            
+            // วัตถุดิบในการสร้างโจทย์
+            const setsLevel1 = ["{1, 2, 3}", "{2, 3, 4}", "{a, b, c}"];
+            const setsLevel2 = ["{1, {2}, 3}", "{{1}, 2, 3}", "{∅, 1, 2}", "{1, 2, {1, 2}}"];
+            
+            // สร้าง 100 ข้อโดยสุ่มความยาก
+            while(pool.length < 100) {
+                let qText, isTrue;
+                let type = Math.floor(Math.random() * 4); // สุ่มรูปแบบโจทย์ 4 แบบ
+
+                if (mode === 'membership') {
+                    if (type === 0) { // ปกติ: สมาชิกปกติ vs หลอกเซต
+                        qText = `1 _ ${setsLevel1[Math.floor(Math.random()*setsLevel1.length)]}`; isTrue = true;
+                    } else if (type === 1) { // หลอก: ใส่ปีกกาให้สมาชิก
+                        qText = `{1} _ ${setsLevel1[0]}`; isTrue = false;
+                    } else if (type === 2) { // ยาก: เซตซ้อนเซต
+                        qText = `{1} _ ${setsLevel2[1]}`; isTrue = true;
+                    } else { // ยากมาก: เซตว่าง
+                        let subType = Math.random();
+                        if(subType > 0.6) { qText = `∅ _ {1, 2, 3}`; isTrue = false; }
+                        else if(subType > 0.3) { qText = `∅ _ {∅, 1}`; isTrue = true; }
+                        else { qText = `{∅} _ {∅, {∅}}`; isTrue = true; }
+                    }
+                } else { // โหมดสับเซต
+                    if (type === 0) { // ปกติ: สับเซตปกติ
+                        qText = `{1} _ ${setsLevel1[0]}`; isTrue = true;
+                    } else if (type === 1) { // หลอก: ขาดปีกกา
+                        qText = `1 _ ${setsLevel1[0]}`; isTrue = false;
+                    } else if (type === 2) { // ยาก: เซตว่างเป็นสับเซตเสมอ
+                        let subType = Math.random();
+                        if(subType > 0.5) { qText = `∅ _ ${setsLevel2[0]}`; isTrue = true; }
+                        else { qText = `∅ _ ∅`; isTrue = true; }
+                    } else { // ยากมาก: สับเซตของเซตซ้อนเซต
+                        let subType = Math.random();
+                        if(subType > 0.5) { qText = `{{1}} _ {{1}, 2, 3}`; isTrue = true; }
+                        else { qText = `{1, 2} _ {{1, 2}, 3}`; isTrue = false; }
+                    }
+                }
+
+                // สุ่มคำถามบวกหรือลบ (∈, ⊂ vs ∉, ⊄)
+                let askNegative = Math.random() > 0.5;
+                let correctAns = mode === 'membership' ? (isTrue ? "∈" : "∉") : (isTrue ? "⊂" : "⊄");
+                
+                // ถ้าสลับไปถามกลับด้าน
+                if(askNegative) {
+                    correctAns = (correctAns === "∈" ? "∉" : (correctAns === "∉" ? "∈" : (correctAns === "⊂" ? "⊄" : "⊂")));
+                    isTrue = !isTrue;
+                }
+
+                if(!pool.some(p => p.q === qText)) pool.push({ q: qText, a: correctAns });
+            }
+            return pool.sort(() => Math.random() - 0.5); // สับไพ่โจทย์
+        }
+
+        let chosenMode = '', availableQuestions = [], currentQuestion = null, score = 0, timeLeft = 90, questionCount = 1, timerId = null, mysteryBoxTimer = null, isCameraActive = false, canProcessAnswer = true;
+        let leftSymbol = '', rightSymbol = '', currentHoveredButton = null, hoverStartTime = 0;
+        const requiredHoverTime = 500; 
+
+        function openInstruction(mode) {
+            chosenMode = mode;
+            document.getElementById('selected-mode-text').innerText = (mode === 'membership') ? "การเป็นสมาชิก (∈, ∉)" : "การเป็นสับเซต (⊂, ⊄)";
+            document.getElementById('how-to-modal').style.display = 'flex';
+        }
+
+        // ระบบขอเปิดกล้อง Webcam
+        async function initCamera() {
+            const camBtn = document.getElementById('cam-btn');
+            camBtn.innerText = "⏳ กำลังเชื่อมต่อ...";
+            camBtn.style.pointerEvents = "none";
+
+            const videoElement = document.getElementById('bg-video');
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                videoElement.srcObject = cameraStream;
+                isCameraActive = true;
+                videoElement.style.display = "block";
+                document.getElementById('hand-pointer').style.display = "block";
+                camBtn.innerText = "✅ กล้องพร้อมใช้งาน";
+                const startBtn = document.getElementById('start-btn');
+                startBtn.style.opacity = "1";
+                startBtn.style.pointerEvents = "auto";
+            } catch (err) {
+                alert("ไม่สามารถเข้าถึงกล้องได้ กรุณาอนุญาตสิทธิ์การเข้าถึงกล้องถ่ายภาพ");
+                console.error(err);
+                camBtn.innerText = "⚠️ กล้องไม่พร้อม (ยังเริ่มเกมได้)";
+            }
+        }
+
+        function initAIAndCamera() {
+            initCamera(); // เรียกใช้ฟังก์ชันเปิดกล้องที่สร้างไว้แล้ว
+
+            // ตั้งค่า AI จับฝ่ามือ ( MediaPipe )
+            const hands = new Hands({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+            });
+            hands.setOptions({
+                maxNumHands: 1,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.6,
+                minTrackingConfidence: 0.6
+            });
+            hands.onResults(onHandTrackingResults);
+
+            const videoElement = document.getElementById('bg-video');
+            const camera = new Camera(videoElement, {
+                onFrame: async () => {
+                    if (isCameraActive) await hands.send({ image: videoElement });
+                },
+                width: 1280,
+                height: 720
+            });
+            camera.start();
+        }
+
+        function realStartGame() {
+            // เปิดเพลงพื้นหลัง
+            document.getElementById('bgmSound').play();
+            
+            availableQuestions = generateQuestionsPool(chosenMode);
+            
+            if(chosenMode === 'membership') {
+                leftSymbol = "∈"; rightSymbol = "∉";
+            } else {
+                leftSymbol = "⊂"; rightSymbol = "⊄";
+            }
+
+            document.getElementById('btn-left').innerText = leftSymbol;
+            document.getElementById('btn-right').innerText = rightSymbol;
+
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('how-to-modal').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+
+            updateUIDisplay();
+            generateNextQuestion();
+
+            // รันเวลานับถอยหลัง 90 วินาที
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateUIDisplay();
+                if (timeLeft <= 0) finalizeGame();
+            }, 1000);
+
+            // สุ่มเรียกกล่องปริศนาทุกๆ 12 วินาที
+            mysteryBoxTimer = setInterval(spawnMysteryBox, 12000);
+        }
+
+        function onHandTrackingResults(results) {
+            const pointer = document.getElementById('hand-pointer');
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const palmCenter = results.multiHandLandmarks[0][9];
+                
+                // แปลงอัตราพิกัดจากค่า 0-1 ให้เป็นพิกัดพิกเซลจริงบนจอ (กลับด้าน)
+                const xPixel = (1 - palmCenter.x) * window.innerWidth;
+                const yPixel = palmCenter.y * window.innerHeight;
+
+                pointer.style.left = `${xPixel}px`;
+                pointer.style.top = `${yPixel}px`;
+
+                if (document.getElementById('game-screen').style.display === 'block' && canProcessAnswer) {
+                    checkPointerCollisions(xPixel, yPixel);
+                }
+            }
+        }
+
+        function checkPointerCollisions(hx, hy) {
+            const btnLeft = document.getElementById('btn-left'), btnRight = document.getElementById('btn-right'), mBox = document.getElementById('mystery-box');
+            const rectLeft = btnLeft.getBoundingClientRect(), rectRight = btnRight.getBoundingClientRect();
+            let insideAnyButton = null;
+
+            if (hx >= rectLeft.left && hx <= rectLeft.right && hy >= rectLeft.top && hy <= rectLeft.bottom) insideAnyButton = 'left';
+            else if (hx >= rectRight.left && hx <= rectRight.right && hy >= rectRight.top && hy <= rectRight.bottom) insideAnyButton = 'right';
+
+            if (insideAnyButton) {
+                if (currentHoveredButton !== insideAnyButton) {
+                    currentHoveredButton = insideAnyButton; hoverStartTime = Date.now();
+                    if(insideAnyButton === 'left') btnLeft.classList.add('ai-hovered');
+                    if(insideAnyButton === 'right') btnRight.classList.add('ai-hovered');
+                } else {
+                    if (Date.now() - hoverStartTime >= requiredHoverTime) {
+                        executeAnswerSelection(insideAnyButton); resetHoverState();
+                    }
+                }
+            } else resetHoverState();
+
+            if (mBox.style.display === 'block') {
+                const rectBox = mBox.getBoundingClientRect();
+                if (hx >= rectBox.left && hx <= rectBox.right && hy >= rectBox.top && hy <= rectBox.bottom) collectBonusBox();
+            }
+        }
+
+        function resetHoverState() {
+            document.getElementById('btn-left').classList.remove('ai-hovered'); document.getElementById('btn-right').classList.remove('ai-hovered');
+            currentHoveredButton = null;
+        }
+
+        function executeAnswerSelection(side) {
+            canProcessAnswer = false;
+            const chosenAnswer = (side === 'left') ? leftSymbol : rightSymbol;
+            if (chosenAnswer === currentQuestion.a) { score += 10; document.getElementById('correctSound').play(); }
+            else { document.getElementById('wrongSound').play(); feedback.innerText = "❌"; feedback.style.color = "#f44336"; }
+
+            feedback.style.display = "block";
+            setTimeout(() => {
+                feedback.style.display = "none";
+                questionCount++;
+                if (questionCount > 100) finalizeGame();
+                else { canProcessAnswer = true; updateUIDisplay(); generateNextQuestion(); }
+            }, 600);
+        }
+
+        function generateNextQuestion() {
+            currentQuestion = availableQuestions[questionCount - 1]; 
+            document.getElementById('questionText').innerHTML = currentQuestion.q.replace("_", " &nbsp;&nbsp; ") + " <span>?</span>";
+        }
+
+        function updateUIDisplay() {
+            document.getElementById('scoreDisplay').innerText = score;
+            document.getElementById('timeDisplay').innerText = timeLeft;
+            document.getElementById('qCountDisplay').innerText = questionCount;
+        }
+
+        function spawnMysteryBox() {
+            const mBox = document.getElementById('mystery-box');
+            mBox.style.left = `${Math.floor(Math.random() * (window.innerWidth - 100)) + 50}px`;
+            mBox.style.top = `${Math.floor(Math.random() * (window.innerHeight - 300)) + 200}px`;
+            mBox.style.display = 'block';
+            setTimeout(() => { mBox.style.display = 'none'; }, 5000);
+        }
+
+        function collectBonusBox() {
+            document.getElementById('mystery-box').style.display = 'none';
+            document.getElementById('bonusSound').play();
+            score += 20; updateUIDisplay();
+        }
+
+        function finalizeGame() {
+            clearInterval(timerId); clearInterval(mysteryBoxTimer);
+            document.getElementById('bgmSound').pause();
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'flex';
+            document.getElementById('finalScore').innerText = score;
+            // คำนวณจำนวนข้อที่ทำได้จริง (questionCount เริ่มที่ 1 ดังนั้นถ้าตอบไป 1 ข้อ count จะเป็น 2)
+            document.getElementById('finalQuestions').innerText = questionCount - 1; 
+            document.getElementById('hand-pointer').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
