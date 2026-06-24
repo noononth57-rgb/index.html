@@ -2,78 +2,62 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>คณิตศาสตร์มหัศจรรย์ - เซต ม.4</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
-        body { margin: 0; font-family: 'Sarabun', sans-serif; background: #222; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        
-        #game-container { width: 100%; height: 100%; background: radial-gradient(circle, #4a148c, #1a0b2e); position: relative; color: white; }
-        
-        .ui-top { position: absolute; top: 20px; left: 20px; font-size: 24px; font-weight: bold; }
-        #pause-btn { position: absolute; top: 20px; right: 20px; padding: 15px 30px; font-size: 20px; cursor: pointer; background: #ffeb3b; border: none; border-radius: 15px; font-weight: bold; }
-        
-        .question-box { background: rgba(255, 255, 255, 0.95); color: #333; padding: 50px; border-radius: 40px; font-size: 60px; font-weight: bold; position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
-        
-        .btn-choice { width: 220px; height: 220px; border-radius: 50%; position: absolute; bottom: 15%; font-size: 80px; cursor: pointer; border: 8px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; transition: transform 0.2s; }
+        body { margin: 0; font-family: 'Sarabun', sans-serif; background: #1a1a2e; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; overflow: hidden; }
+        .question-box { background: #ffffff; color: #333; padding: 40px 60px; border-radius: 40px; font-size: 80px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.3); margin-bottom: 50px; }
+        .btn-choice { width: 200px; height: 200px; border-radius: 50%; font-size: 80px; cursor: pointer; border: 8px solid #fff; color: white; position: absolute; bottom: 10%; transition: transform 0.2s; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .btn-choice:active { transform: scale(0.9); }
-        #btn-left { background: #4caf50; left: 15%; }
-        #btn-right { background: #f44336; right: 15%; }
+        #btn-left { background: #27ae60; left: 15%; }
+        #btn-right { background: #c0392b; right: 15%; }
+        #pause-btn { position: absolute; top: 30px; right: 30px; padding: 15px 30px; font-size: 20px; font-weight: bold; cursor: pointer; background: #f1c40f; border: none; border-radius: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <div class="ui-top">คะแนน: <span id="score">0</span></div>
-        <button id="pause-btn" onclick="togglePause()">⏸️ หยุดเกม</button>
-        
-        <div class="question-box" id="questionText">กำลังโหลด...</div>
-        
-        <button class="btn-choice" id="btn-left" onclick="processAnswer('left')">∈</button>
-        <button class="btn-choice" id="btn-right" onclick="processAnswer('right')">∉</button>
-    </div>
+    <button id="pause-btn" onclick="togglePause()">⏸️ หยุดเกม</button>
+    <div class="question-box" id="questionText">กำลังโหลด...</div>
+    <button class="btn-choice" id="btn-left" onclick="processAnswer('left')">∈</button>
+    <button class="btn-choice" id="btn-right" onclick="processAnswer('right')">∉</button>
 
-    <!-- ระบบเสียง -->
-    <audio id="bgmGame" src="https://assets.mixkit.co/active_storage/sfx/167/167-preview.mp3" loop></audio>
-    <audio id="correctSound" src="https://assets.mixkit.co/active_storage/sfx/2005/2005-preview.mp3"></audio>
-    <audio id="wrongSound" src="https://assets.mixkit.co/active_storage/sfx/2006/2006-preview.mp3"></audio>
+    <audio id="bgmGame" src="https://assets.mixkit.co/active_storage/sfx/139/139-preview.mp3" loop></audio>
+    <audio id="correctSound" src="https://assets.mixkit.co/active_storage/sfx/2004/2004-preview.mp3"></audio>
+    <audio id="wrongSound" src="https://assets.mixkit.co/active_storage/sfx/2007/2007-preview.mp3"></audio>
     <audio id="pauseSound" src="https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3"></audio>
 
     <script>
-        let score = 0, isPaused = false, currentQuestion = null;
-        let usedQuestions = new Set();
-
+        let currentQuestion = null, isPaused = false;
         const bgm = document.getElementById('bgmGame');
 
         function generateQuestion() {
-            const pool = ['💎', '🧱', '🗡️', '🍎', '🏹', '🦊', '🐱', '🍕', '🚀', '👾', '🔺', '⭐', '☀️', 'x', 'y', 'z', '1', '5', '9'];
-            let elements = [...pool].sort(() => Math.random() - 0.5).slice(0, 5);
+            // คลังข้อมูลแบบ "เพียวๆ" ไม่มีชื่อไอเทม
+            const items = ['💎', '🧱', '🗡️', '🍎', '🏹', '🦊', '🐱', '🍕', '🚀', '👾', '🔺', '⭐', '☀️', 'x', 'y', 'z', '1', '5', '9'];
+            
+            let elements = [...items].sort(() => Math.random() - 0.5).slice(0, 5);
             let setStr = `{ ${elements.join(', ')} }`;
             
-            if(usedQuestions.has(setStr)) return generateQuestion();
-            usedQuestions.add(setStr);
-
             let isCorrect = Math.random() > 0.5;
-            let target = isCorrect ? elements[0] : '🌀';
-            return { q: `${target} <br> .......... <br> ${setStr}`, a: isCorrect ? '∈' : '∉' };
+            let target = isCorrect ? elements[Math.floor(Math.random() * elements.length)] : '🌀';
+            
+            // แสดงแค่ตัวไอคอนและสัญลักษณ์เซต
+            return { q: `${target} &nbsp; ∈/∉ &nbsp; ${setStr}`, a: isCorrect ? '∈' : '∉' };
         }
 
         function processAnswer(side) {
             if(isPaused) return;
             let ans = (side === 'left') ? '∈' : '∉';
             if(ans === currentQuestion.a) {
-                score += 10;
                 document.getElementById('correctSound').play();
             } else {
                 document.getElementById('wrongSound').play();
             }
-            document.getElementById('score').innerText = score;
             nextQuestion();
         }
 
         function nextQuestion() {
             currentQuestion = generateQuestion();
-            document.getElementById('questionText').innerHTML = currentQuestion.q;
+            // ปรับข้อความโจทย์ให้แสดงเฉพาะสัญลักษณ์
+            document.getElementById('questionText').innerHTML = `${currentQuestion.q.split('&nbsp;')[0]} <br> .......... <br> ${currentQuestion.q.split('&nbsp;')[2]}`;
         }
 
         function togglePause() {
@@ -88,9 +72,8 @@
             }
         }
 
-        // เริ่มเกมอัตโนมัติ
         window.onload = () => {
-            bgm.volume = 0.5;
+            bgm.volume = 0.4;
             bgm.play();
             nextQuestion();
         };
