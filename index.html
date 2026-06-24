@@ -276,36 +276,39 @@
         // 🧠 ระบบคลังโจทย์ "Minecraft & Emoji Game Universe" ป้องการโจทย์ซ้ำ เรต 50:50
         // ==========================================================================
         function generateRawQuestionData() {
-    const poolMinecraft = ['💎', '🧱', '🗡️', '🍎', '🏹', '🛡️', '🧪', '⛏️', '🪵', '🍞'];
-    const poolEmojis = ['🦊', '🐱', '🦖', '🍕', '🍟', '🎈', '🎮', '🚀', '🛸', '👾', '🔥', '💧', '⚡', '👑', '💯'];
-    const poolShapes = ['🔺', '🟩', '🟡', '⭐', '◆', '☀️', '🌙', '🍀'];
-    
-    // รวมเลขและอักษรไว้ในตัวแปรเดียวชื่อ poolAlphanumeric
-    const poolAlphanumeric = ['1', '2', '3', '4', '5', '7', '8', '9', '10', '12', '13', '14', '15', '16', '17', '18', '19', '20', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+            // 1. คลังไอเทม Minecraft ยอดฮิตที่เด็ก ๆ ชอบเล่น
+            const poolMinecraft = ['💎', '🧱', '🗡️', '🍎', '🏹', '🛡️', '🧪', '⛏️', '🪵', '🍞'];
+            
+            // 2. คลังอิโมจิสุดกวน ขวัญใจวัยรุ่น
+            const poolEmojis = ['🦊', '🐱', '🦖', '🍕', '🍟', '🎈', '🎮', '🚀', '🛸', '👾', '🔥', '💧', '⚡', '👑', '💯'];
+            
+            // 3. คลังรูปทรงเรขาคณิตและธรรมชาติ สำหรับปูพื้นฐานเรื่องสัญลักษณ์
+            const poolShapes = ['🔺', '🟩', '🟡', '⭐', '◆', '☀️', '🌙', '🍀'];
+            
+            // 4. คลังตัวเลขพื้นฐาน
+            const poolNumbers = ['1', '2', '3', '4', '5', '7', '8', '9'];
 
-    function shuffleArray(arr) {
-        return [...arr].sort(() => Math.random() - 0.5);
-    }
+            function shuffleArray(arr) {
+                return [...arr].sort(() => Math.random() - 0.5);
+            }
 
-    function pickRandomElements(pool, count) {
-        return shuffleArray(pool).slice(0, count);
-    }
+            function pickRandomElements(pool, count) {
+                return shuffleArray(pool).slice(0, count);
+            }
 
-    // แก้ไขตรงนี้: เรียกใช้ poolAlphanumeric แทน poolNumbers
-    const poolMixers = [
-        [...poolMinecraft, ...poolEmojis],
-        [...poolMinecraft, ...poolShapes],
-        [...poolEmojis, ...poolShapes],
-        [...poolAlphanumeric, ...poolMinecraft], 
-        [...poolMinecraft, ...poolEmojis, ...poolShapes]
-    ];
-    
-    // ... ส่วนที่เหลือของฟังก์ชัน ให้คงเดิมไว้ครับ ...
-    const activeUniverse = shuffleArray(poolMixers[Math.floor(Math.random() * poolMixers.length)]);
-    const setSize = Math.floor(Math.random() * 3) + 4; 
-    const mainElements = pickRandomElements(activeUniverse, setSize);
-    // ... (ต่อจากโค้ดเดิมของคุณครูจนจบฟังก์ชัน)
-}
+            // ระบบสุ่มจับคู่ "มิกเซอร์" เพื่อสลับหมวดหมู่โจทย์ในแต่ละข้อไม่ให้ซ้ำซาก
+            const poolMixers = [
+                [...poolMinecraft, ...poolEmojis],
+                [...poolMinecraft, ...poolShapes],
+                [...poolEmojis, ...poolShapes],
+                [...poolNumbers, ...poolMinecraft],
+                [...poolMinecraft, ...poolEmojis, ...poolShapes]
+            ];
+            const activeUniverse = shuffleArray(poolMixers[Math.floor(Math.random() * poolMixers.length)]);
+
+            // สุ่มล็อกขนาดสมาชิกของเซตหลักให้อยู่ในช่วง 4 ถึง 6 ตัว
+            const setSize = Math.floor(Math.random() * 3) + 4; 
+            const mainElements = pickRandomElements(activeUniverse, setSize);
 
             // แยกสิ่งแปลกปลอมออกจากจักรวาลเพื่อนำมาใช้ทำตัวหลอก
             const unusedElements = activeUniverse.filter(el => !mainElements.includes(el));
