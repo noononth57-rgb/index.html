@@ -1,695 +1,543 @@
-<!DOCTYPE html>
+ตรวจสอบโค้ดให้หน่อยว่าถูกไหม <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>เก่งคณิต คิดสนุก - เรื่องเซต ม.4</title>
-    
-    <!-- ลิงก์ไลบรารี MediaPipe เวอร์ชันเสถียร -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>เก่งคณิต คิดสนุก - เรื่องเซต ม.4</title>
+    
+    <!-- ลิงก์ไลบรารี MediaPipe เวอร์ชันเสถียร -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
 
-        * { box-sizing: border-box; font-family: 'Sarabun', sans-serif; user-select: none; }
-        body { margin: 0; overflow: hidden; background-color: #222; color: #333; }
+        * { box-sizing: border-box; font-family: 'Sarabun', sans-serif; user-select: none; }
+        body { margin: 0; overflow: hidden; background-color: #222; color: #333; }
 
-        /* พื้นหลังกล้อง WebCam */
-        #bg-video { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; transform: scaleX(-1); }
-        
-        /* จุดเลเซอร์ชี้ตำแหน่งฝ่ามือ AI */
-        #hand-pointer { position: absolute; width: 35px; height: 35px; background: rgba(255, 235, 59, 0.8); border: 3px solid #fff; border-radius: 50%; pointer-events: none; z-index: 999; display: none; transform: translate(-50%, -50%); box-shadow: 0 0 20px #ffeb3b, inset 0 0 8px #fff; }
+        /* พื้นหลังกล้อง WebCam */
+        #bg-video { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; transform: scaleX(-1); }
+        
+        /* จุดเลเซอร์ชี้ตำแหน่งฝ่ามือ AI */
+        #hand-pointer { position: absolute; width: 35px; height: 35px; background: rgba(255, 235, 59, 0.8); border: 3px solid #fff; border-radius: 50%; pointer-events: none; z-index: 999; display: none; transform: translate(-50%, -50%); box-shadow: 0 0 20px #ffeb3b, inset 0 0 8px #fff; }
 
-        /* ==========================================================================
-           1. หน้าเข้าสู่เกม (Login Screen)
-           ========================================================================== */
-        #login-screen {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url(https://raw.githubusercontent.com/noononth57-rgb/index.html/main/ChatGPT%20Image%2024%20%E0%B8%A1%E0%B8%B4.%E0%B8%A2.%202569%2017_02_10.png);
-            background-color: #3b1472; 
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end; 
-            align-items: center;
-            padding-bottom: 80px; 
-            z-index: 400;
-        }
-        .login-container-card {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px 45px;
-            border-radius: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-            text-align: center;
-            width: 500px;
-            max-width: 90%;
-            border: 4px solid #ffb74d;
-        }
-        .login-title-text { font-size: 2.2rem; font-weight: bold; color: #4a148c; margin: 0 0 10px 0; }
-        .login-sub-text { font-size: 1.1rem; color: #666; margin: 0 0 20px 0; }
-        .btn-login-trigger {
-            background: linear-gradient(135deg, #0288d1, #01579b);
-            color: #fff; border: 3px solid #ffd54f; padding: 16px 35px;
-            font-size: 1.5rem; font-weight: bold; border-radius: 50px;
-            cursor: pointer; box-shadow: 0 8px 0 #002f6c; width: 100%;
-            transition: transform 0.1s;
-        }
-        .btn-login-trigger:active { transform: translateY(6px); box-shadow: none; }
+        /* ==========================================================================
+           1. หน้าเข้าสู่เกม (Login Screen)
+           ========================================================================== */
+        #login-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url(https://raw.githubusercontent.com/noononth57-rgb/index.html/main/ChatGPT%20Image%2024%20%E0%B8%A1%E0%B8%B4.%E0%B8%A2.%202569%2017_02_10.png);
+            background-color: #3b1472; 
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; 
+            align-items: center;
+            padding-bottom: 80px; 
+            z-index: 400;
+        }
+        .login-container-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px 45px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            text-align: center;
+            width: 500px;
+            max-width: 90%;
+            border: 4px solid #ffb74d;
+        }
+        .login-title-text { font-size: 2.2rem; font-weight: bold; color: #4a148c; margin: 0 0 10px 0; }
+        .login-sub-text { font-size: 1.1rem; color: #666; margin: 0 0 20px 0; }
+        .btn-login-trigger {
+            background: linear-gradient(135deg, #0288d1, #01579b);
+            color: #fff; border: 3px solid #ffd54f; padding: 16px 35px;
+            font-size: 1.5rem; font-weight: bold; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 8px 0 #002f6c; width: 100%;
+            transition: transform 0.1s;
+        }
+        .btn-login-trigger:active { transform: translateY(6px); box-shadow: none; }
 
-        /* ==========================================================================
-           2. หน้าลงทะเบียน (Register Screen)
-           ========================================================================== */
-        #register-screen { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background-image: url("https://raw.githubusercontent.com/noononth57-rgb/index.html/main/ChatGPT%20Image%2023%20%E0%B8%A1%E0%B8%B4.%E0%B8%A2.%202569%2021_08_39%20(1).png");
-            background-size: cover; background-position: center;
-            display: none; justify-content: center; align-items: center; z-index: 300; 
-        }
-        .register-card { background: white; border-radius: 30px; width: 480px; padding: 35px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); text-align: center; border: 3px solid #4a148c; }
-        .register-title { font-size: 1.8rem; font-weight: bold; color: #4a148c; margin-bottom: 20px; }
-        .form-group { text-align: left; margin-bottom: 18px; }
-        .form-group label { display: block; font-size: 1.1rem; font-weight: bold; color: #555; margin-bottom: 6px; }
-        .form-group input { width: 100%; padding: 12px 15px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 12px; outline: none; user-select: text; }
-        .form-group input:focus { border-color: #4a148c; }
-        .btn-submit-reg { background: #ff9800; color: white; border: none; padding: 12px 40px; font-size: 1.3rem; font-weight: bold; border-radius: 15px; cursor: pointer; box-shadow: 0 5px 0 #e65100; width: 100%; margin-top: 10px; }
-        .btn-submit-reg:active { transform: translateY(4px); box-shadow: none; }
+        /* ==========================================================================
+           2. หน้าลงทะเบียน (Register Screen)
+           ========================================================================== */
+        #register-screen { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background-image: url("https://raw.githubusercontent.com/noononth57-rgb/index.html/main/ChatGPT%20Image%2023%20%E0%B8%A1%E0%B8%B4.%E0%B8%A2.%202569%2021_08_39%20(1).png");
+            background-size: cover; background-position: center;
+            display: none; justify-content: center; align-items: center; z-index: 300; 
+        }
+        .register-card { background: white; border-radius: 30px; width: 480px; padding: 35px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); text-align: center; border: 3px solid #4a148c; }
+        .register-title { font-size: 1.8rem; font-weight: bold; color: #4a148c; margin-bottom: 20px; }
+        .form-group { text-align: left; margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 1.1rem; font-weight: bold; color: #555; margin-bottom: 6px; }
+        .form-group input { width: 100%; padding: 12px 15px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 12px; outline: none; user-select: text; }
+        .form-group input:focus { border-color: #4a148c; }
+        .btn-submit-reg { background: #ff9800; color: white; border: none; padding: 12px 40px; font-size: 1.3rem; font-weight: bold; border-radius: 15px; cursor: pointer; box-shadow: 0 5px 0 #e65100; width: 100%; margin-top: 10px; }
+        .btn-submit-reg:active { transform: translateY(4px); box-shadow: none; }
 
-        /* ==========================================================================
-           3. หน้าเลือกโหมดเกม (Mode Screen)
-           ========================================================================== */
-        #mode-screen { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background-image: url("https://raw.githubusercontent.com/noononth57-rgb/index.html/main/ChatGPT%20Image%2023%20%E0%B8%A1%E0%B8%B4.%E0%B8%A2.%202569%2021_08_39%20(1).png");
-            background-size: cover; background-position: center;
-            display: none; justify-content: center; align-items: center; z-index: 200; 
-        }
-        .menu-container { 
-            display: flex; gap: 60px; justify-content: center; align-items: center; 
-            position: absolute; top: 70%; left: 50%; transform: translate(-50%, -50%); z-index: 210;
-        }
-        .menu-btn-img { width: 175px; height: auto; cursor: pointer; transition: transform 0.1s, filter 0.1s; filter: drop-shadow(0px 8px 0px rgba(0,0,0,0.3)); }
-        .menu-btn-img:hover { transform: scale(1.08); }
-        .menu-btn-img:active { transform: scale(0.95); filter: drop-shadow(0px 3px 0px rgba(0,0,0,0.3)); }
+        /* ==========================================================================
+           3. หน้าเลือกโหมดเกม (Mode Screen)
+           ========================================================================== */
+        #mode-screen { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background-image: url("https://raw.githubusercontent.com/noononth57-rgb/index.html/main/ChatGPT%20Image%2023%20%E0%B8%A1%E0%B8%B4.%E0%B8%A2.%202569%2021_08_39%20(1).png");
+            background-size: cover; background-position: center;
+            display: none; justify-content: center; align-items: center; z-index: 200; 
+        }
+        .menu-container { 
+            display: flex; gap: 60px; justify-content: center; align-items: center; 
+            position: absolute; top: 70%; left: 50%; transform: translate(-50%, -50%); z-index: 210;
+        }
+        .menu-btn-img { width: 175px; height: auto; cursor: pointer; transition: transform 0.1s, filter 0.1s; filter: drop-shadow(0px 8px 0px rgba(0,0,0,0.3)); }
+        .menu-btn-img:hover { transform: scale(1.08); }
+        .menu-btn-img:active { transform: scale(0.95); filter: drop-shadow(0px 3px 0px rgba(0,0,0,0.3)); }
 
-        #how-to-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 250; justify-content: center; align-items: center; }
-        .modal-card { background: white; border-radius: 30px; width: 550px; padding: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); text-align: center; position: relative; } 
-        .modal-title { font-size: 2.3rem; font-weight: bold; color: #4a148c; margin-bottom: 20px; }
-        .modal-list { text-align: left; font-size: 1.3rem; line-height: 1.8; margin-bottom: 30px; color: #4b5563; }
-        
-        .close-modal-btn { position: absolute; top: 20px; right: 25px; background: none; border: none; font-size: 1.8rem; font-weight: bold; color: #aaa; cursor: pointer; line-height: 1; }
-        .close-modal-btn:hover { color: #ef4444; transform: scale(1.15); }
+        #how-to-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 250; justify-content: center; align-items: center; }
+        .modal-card { background: white; border-radius: 30px; width: 550px; padding: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); text-align: center; position: relative; } 
+        .modal-title { font-size: 2.3rem; font-weight: bold; color: #4a148c; margin-bottom: 20px; }
+        .modal-list { text-align: left; font-size: 1.3rem; line-height: 1.8; margin-bottom: 30px; color: #4b5563; }
+        
+        .close-modal-btn { position: absolute; top: 20px; right: 25px; background: none; border: none; font-size: 1.8rem; font-weight: bold; color: #aaa; cursor: pointer; line-height: 1; }
+        .close-modal-btn:hover { color: #ef4444; transform: scale(1.15); }
 
-        .modal-btn-group { display: flex; justify-content: center; gap: 20px; }
-        .modal-btn { padding: 15px 35px; font-size: 1.3rem; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; color: white; box-shadow: 0 5px 0 rgba(0,0,0,0.2); }
-        .btn-camera-init { background: #0288d1; }
-        .btn-game-start { background: #4caf50; opacity: 0.5; pointer-events: none; } 
+        .modal-btn-group { display: flex; justify-content: center; gap: 20px; }
+        .modal-btn { padding: 15px 35px; font-size: 1.3rem; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; color: white; box-shadow: 0 5px 0 rgba(0,0,0,0.2); }
+        .btn-camera-init { background: #0288d1; }
+        .btn-game-start { background: #4caf50; opacity: 0.5; pointer-events: none; } 
 
-        /* ==========================================================================
-           4. หน้าเล่นเกม (Game Screen)
-           ========================================================================== */
-        #game-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
-        
-        .top-left-ui { position: absolute; top: 25px; left: 25px; display: flex; gap: 15px; }
-        .stat-pill { background: #fffdf0; padding: 10px 22px; border-radius: 30px; font-size: 22px; font-weight: bold; display: flex; align-items: center; gap: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.15); border: 1px solid #ffeb3b; }
-        
-        .top-right-ui { position: absolute; top: 25px; right: 25px; display: flex; gap: 15px; }
-        .icon-btn { background: #fffdf0; border: 1px solid #ccc; width: 55px; height: 55px; border-radius: 15px; font-size: 24px; cursor: pointer; box-shadow: 0 6px 12px rgba(0,0,0,0.15); display: flex; justify-content: center; align-items: center; }
+        /* ==========================================================================
+           4. หน้าเล่นเกม (Game Screen)
+           ========================================================================== */
+        #game-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
+        
+        .top-left-ui { position: absolute; top: 25px; left: 25px; display: flex; gap: 15px; }
+        .stat-pill { background: #fffdf0; padding: 10px 22px; border-radius: 30px; font-size: 22px; font-weight: bold; display: flex; align-items: center; gap: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.15); border: 1px solid #ffeb3b; }
+        
+        .top-right-ui { position: absolute; top: 25px; right: 25px; display: flex; gap: 15px; }
+        .icon-btn { background: #fffdf0; border: 1px solid #ccc; width: 55px; height: 55px; border-radius: 15px; font-size: 24px; cursor: pointer; box-shadow: 0 6px 12px rgba(0,0,0,0.15); display: flex; justify-content: center; align-items: center; }
 
-        .question-box { background: white; padding: 35px 50px; border-radius: 25px; font-size: 38px; font-weight: bold; color: #2d2d6b; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: absolute; top: 18%; left: 50%; transform: translateX(-50%); text-align: center; min-width: 680px; max-width: 90%; line-height: 1.6; }
+        .question-box { background: white; padding: 35px 50px; border-radius: 25px; font-size: 38px; font-weight: bold; color: #2d2d6b; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: absolute; top: 18%; left: 50%; transform: translateX(-50%); text-align: center; min-width: 680px; max-width: 90%; line-height: 1.6; }
 
-        .choice-btn { width: 180px; height: 180px; border-radius: 50%; border: none; font-size: 65px; font-weight: bold; color: white; position: absolute; bottom: 15%; box-shadow: 0 12px 24px rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center; transition: transform 0.2s; }
-        .choice-btn.ai-hovered { transform: scale(1.18); box-shadow: 0 0 35px #ffeb3b; }
-        .btn-green { background: radial-gradient(circle at 30% 30%, #66bb6a, #4caf50); left: 15%; }
-        .btn-red-choice { background: radial-gradient(circle at 30% 30%, #ef5350, #d32f2f); right: 15%; }
+        .choice-btn { width: 180px; height: 180px; border-radius: 50%; border: none; font-size: 65px; font-weight: bold; color: white; position: absolute; bottom: 15%; box-shadow: 0 12px 24px rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center; transition: transform 0.2s; }
+        .choice-btn.ai-hovered { transform: scale(1.18); box-shadow: 0 0 35px #ffeb3b; }
+        .btn-green { background: radial-gradient(circle at 30% 30%, #66bb6a, #4caf50); left: 15%; }
+        .btn-red-choice { background: radial-gradient(circle at 30% 30%, #ef5350, #d32f2f); right: 15%; }
 
-        #mystery-box { position: absolute; font-size: 65px; display: none; cursor: pointer; z-index: 50; animation: bounce 1s infinite alternate; }
-        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
+        #mystery-box { position: absolute; font-size: 65px; display: none; cursor: pointer; z-index: 50; animation: bounce 1s infinite alternate; }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
 
-        /* หน้าต่างเฉลยคะแนนตรงกลางจอ + แอนิเมชันตอนโหลด */
-        #feedback-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 130px; display: none; z-index: 90; text-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; font-weight: bold; background: rgba(0,0,0,0.85); padding: 40px 60px; border-radius: 30px; min-width: 550px; backdrop-filter: blur(5px); }
-        
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* หน้าต่างเฉลยคะแนนตรงกลางจอ + แอนิเมชันตอนโหลด */
+        #feedback-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 130px; display: none; z-index: 90; text-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; font-weight: bold; background: rgba(0,0,0,0.85); padding: 40px 60px; border-radius: 30px; min-width: 550px; backdrop-filter: blur(5px); }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ==========================================================================
-           5. หน้าสรุปคะแนน (End Screen)
-           ========================================================================== */
-        #end-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); color: white; flex-direction: column; justify-content: center; align-items: center; z-index: 500; overflow-y: auto; padding: 20px 0; }
-        .end-card { background: #ffffff; color: #333; padding: 35px; border-radius: 30px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.5); width: 650px; max-width: 90%; }
-        .restart-btn { background: #ffeb3b; color: #4a148c; border: none; padding: 12px 35px; font-size: 1.4rem; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 6px 0 #f57c00; margin-top: 15px; transition: 0.1s; margin-right: 10px; }
-        .restart-btn:active { transform: translateY(6px); box-shadow: none; }
-        .clear-btn { background: #ef4444; color: white; border: none; padding: 12px 25px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 6px 0 #b91c1c; margin-top: 15px; transition: 0.1s; }
-        .clear-btn:active { transform: translateY(6px); box-shadow: none; }
+        /* ==========================================================================
+           5. หน้าสรุปคะแนน (End Screen)
+           ========================================================================== */
+        #end-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); color: white; flex-direction: column; justify-content: center; align-items: center; z-index: 500; overflow-y: auto; padding: 20px 0; }
+        .end-card { background: #ffffff; color: #333; padding: 35px; border-radius: 30px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.5); width: 650px; max-width: 90%; }
+        .restart-btn { background: #ffeb3b; color: #4a148c; border: none; padding: 12px 35px; font-size: 1.4rem; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 6px 0 #f57c00; margin-top: 15px; transition: 0.1s; margin-right: 10px; }
+        .restart-btn:active { transform: translateY(6px); box-shadow: none; }
+        .clear-btn { background: #ef4444; color: white; border: none; padding: 12px 25px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 6px 0 #b91c1c; margin-top: 15px; transition: 0.1s; }
+        .clear-btn:active { transform: translateY(6px); box-shadow: none; }
 
-        .leaderboard-box { margin-top: 25px; max-height: 250px; overflow-y: auto; border: 1px solid #eee; border-radius: 15px; }
-        table { width: 100%; border-collapse: collapse; background: #fff; text-align: left; }
-        th { background: #4a148c; color: white; padding: 10px; font-size: 16px; position: sticky; top: 0; }
-        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 15px; }
-        tr:nth-child(even) { background: #f9f9f9; }
-    </style>
+        .leaderboard-box { margin-top: 25px; max-height: 250px; overflow-y: auto; border: 1px solid #eee; border-radius: 15px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; text-align: left; }
+        th { background: #4a148c; color: white; padding: 10px; font-size: 16px; position: sticky; top: 0; }
+        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 15px; }
+        tr:nth-child(even) { background: #f9f9f9; }
+    </style>
 </head>
 <body>
 
-    <video id="bg-video" autoplay playsinline muted style="display:none;"></video>
-    <div id="hand-pointer"></div>
+    <video id="bg-video" autoplay playsinline muted style="display:none;"></video>
+    <div id="hand-pointer"></div>
 
-    <div id="login-screen">
-        <div class="login-container-card">
-            <h1 class="login-title-text">ยินดีต้อนรับสู่ห้องเรียนคณิตศาสตร์</h1>
-            <p class="login-sub-text">บทเรียนเรื่องเซต ม.4 ปราบเซียน</p>
-            <button class="btn-login-trigger" onclick="navigateToRegister()">🚀 เข้าสู่ระบบ</button>
-            <div style="font-size: 13px; color: #888; margin-top: 12px;">(เมื่อกดแล้ว ระบบจะพานักเรียนไปกรอก ชื่อ ชั้น เลขที่)</div>
-        </div>
-    </div>
-    <div id="register-screen">
-        <div class="register-card">
-            <div class="register-title">ลงทะเบียนผู้เล่น 📝</div>
-            <div class="form-group">
-                <label>ชื่อ - นามสกุล:</label>
-                <input type="text" id="student-name" placeholder="เช่น เด็กชายสมชาย ตั้งใจเรียน" autocomplete="off">
-            </div>
-            <div class="form-group">
-                <label>ชั้น / ห้อง:</label>
-                <input type="text" id="student-class" placeholder="เช่น ม.4/1" autocomplete="off">
-            </div>
-            <div class="form-group">
-                <label>เลขที่:</label>
-                <input type="number" id="student-no" placeholder="เช่น 5" min="1" autocomplete="off">
-            </div>
-            <button class="btn-submit-reg" onclick="submitRegistration()">บันทึกข้อมูล & ถัดไป ➡️</button>
-        </div>
-    </div>
+    <div id="login-screen">
+        <div class="login-container-card">
+            <h1 class="login-title-text">ยินดีต้อนรับสู่ห้องเรียนคณิตศาสตร์</h1>
+            <p class="login-sub-text">บทเรียนเรื่องเซต ม.4 ปราบเซียน</p>
+            <button class="btn-login-trigger" onclick="navigateToRegister()">🚀 เข้าสู่ระบบ</button>
+            <div style="font-size: 13px; color: #888; margin-top: 12px;">(เมื่อกดแล้ว ระบบจะพานักเรียนไปกรอก ชื่อ ชั้น เลขที่)</div>
+        </div>
+    </div>
 
-    <div id="mode-screen">
-        <div class="menu-container">
-            <img src="4.png" class="menu-btn-img" onclick="openInstruction('membership')" alt="โหมดการเป็นสมาชิก (∈ และ ∉)">
-            <img src="3.png" class="menu-btn-img" onclick="openInstruction('subset')" alt="โหมดการเป็นสับเซต (⊂ และ ⊄)">
-        </div>
-    </div>
+    <div id="register-screen">
+        <div class="register-card">
+            <div class="register-title">ลงทะเบียนผู้เล่น 📝</div>
+            <div class="form-group">
+                <label>ชื่อ - นามสกุล:</label>
+                <input type="text" id="student-name" placeholder="เช่น เด็กชายสมชาย ตั้งใจเรียน" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>ชั้น / ห้อง:</label>
+                <input type="text" id="student-class" placeholder="เช่น ม.4/1" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>เลขที่:</label>
+                <input type="number" id="student-no" placeholder="เช่น 5" min="1" autocomplete="off">
+            </div>
+            <button class="btn-submit-reg" onclick="submitRegistration()">บันทึกข้อมูล & ถัดไป ➡️</button>
+        </div>
+    </div>
 
-    <div id="how-to-modal">
-        <div class="modal-card">
-            <button class="close-modal-btn" onclick="closeModal()">✖</button>
-            <div class="modal-title">เตรียมความพร้อม 🎮</div>
-            <div class="modal-list">
-                <b>1. โหมดการเล่น:</b> <span id="selected-mode-text" style="color:#0288d1; font-weight:bold;"></span><br>
-                <b>2. กติกาการตอบ:</b> ยกฝ่ามือค้างไว้บนปุ่มตัวเลือกซ้าย-ขวาเพื่อเติมเครื่องหมายลงในช่องว่าง ให้ถูกต้อง<br>
-                <b>3. โบนัสพิเศษ:</b> เลื่อนมือไปเปิดกล่องของขวัญ 🎁 สุ่มรับ +20 คะแนน
-            </div>
-            <div class="modal-btn-group">
-                <button class="modal-btn btn-camera-init" id="cam-btn" onclick="initAIAndCamera()">📷 เปิดใช้งานกล้อง</button>
-                <button class="modal-btn btn-game-start" id="start-btn" onclick="realStartGame()">▶️ เริ่มเข้าสู่เกม</button>
-            </div>
-        </div>
-    </div>
+    <div id="mode-screen">
+        <div class="menu-container">
+            <img src="4.png" class="menu-btn-img" onclick="openInstruction('membership')" alt="โหมดการเป็นสมาชิก (∈ และ ∉)">
+            <img src="3.png" class="menu-btn-img" onclick="openInstruction('subset')" alt="โหมดการเป็นสับเซต (⊂ และ ⊄)">
+        </div>
+    </div>
 
-    <div id="game-screen">
-        <div class="top-left-ui">
-            <div class="stat-pill">🎯 คะแนน: <span id="scoreDisplay">0</span></div>
-            <div class="stat-pill">⏰ เวลา: <span id="timeDisplay">90</span></div>
-            <div class="stat-pill">📝 ข้อที่: <span id="qCountDisplay">1</span>/100</div>
-        </div>
-        <div class="top-right-ui">
-    <script>
-        // ส่วนเสริมฟังก์ชันจัดการปุ่มหยุดเกมและสลับเพลง
-        let isPaused = false;
-        function togglePause() {
-            // ... โค้ดเดิมของคุณครู ...
-        } 
-    </script> <button class="icon-btn" onclick="location.reload()">🏠</button>
-</div>
-        <div id="mystery-box">🎁</div>
-        <div class="question-box" id="questionText">A .......... B <span>?</span></div>
-        
-        <button class="choice-btn btn-green" id="btn-left">∈</button>
-        <button class="choice-btn btn-red-choice" id="btn-right">∉</button>
-        
-        <div id="feedback-overlay">✅</div>
-        <div style="position: absolute; bottom: 15px; width: 100%; text-align: center; color: white; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); font-size: 16px;">โดย ครูนนอา</div>
-    </div>
+    <div id="how-to-modal">
+        <div class="modal-card">
+            <button class="close-modal-btn" onclick="closeModal()">✖</button>
+            <div class="modal-title">เตรียมความพร้อม 🎮</div>
+            <div class="modal-list">
+                <b>1. โหมดการเล่น:</b> <span id="selected-mode-text" style="color:#0288d1; font-weight:bold;"></span><br>
+                <b>2. กติกาการตอบ:</b> ยกฝ่ามือค้างไว้บนปุ่มตัวเลือกซ้าย-ขวาเพื่อเติมเครื่องหมายลงในช่องว่าง ให้ถูกต้อง<br>
+                <b>3. โบนัสพิเศษ:</b> เลื่อนมือไปเปิดกล่องของขวัญ 🎁 สุ่มรับ +20 คะแนน
+            </div>
+            <div class="modal-btn-group">
+                <button class="modal-btn btn-camera-init" id="cam-btn" onclick="initAIAndCamera()">📷 เปิดใช้งานกล้อง</button>
+                <button class="modal-btn btn-game-start" id="start-btn" onclick="realStartGame()">▶️ เริ่มเข้าสู่เกม</button>
+            </div>
+        </div>
+    </div>
 
-    <div id="end-screen">
-        <div class="end-card">
-            <h2 style="font-size: 2.3rem; margin-top:0; color:#4a148c; margin-bottom: 5px;">สิ้นสุดการท้าทาย!</h2>
-            <p style="font-size: 1.2rem; margin: 5px 0; color: #0288d1;">ผู้เล่น: <span id="player-display" style="font-weight: bold; color: #0288d1;"></span></p>
-            <p style="font-size: 1.2rem; margin: 5px 0;">ตอบโจทย์ไปทั้งหมด: <span id="finalQuestions" style="color:#e91e63; font-weight:bold;">0</span> ข้อ</p>
-            <p style="font-size: 1.4rem; margin: 5px 0;">คะแนนรวมสะสม: <span id="finalScore" style="color: #4caf50; font-weight: bold; font-size: 2.8rem;">0</span></p>
-            
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-            <h3 style="margin: 0; color: #4a148c; text-align: left;">📊 ตารางสรุปคะแนนภายในห้องเรียน</h3>
-            
-            <div class="leaderboard-box">
-                <table id="leaderboard-table">
-                    <thead>
-                        <tr>
-                            <th>อันดับ</th>
-                            <th>เลขที่</th>
-                            <th>ชื่อ-นามสกุล</th>
-                            <th>ชั้น</th>
-                            <th>คะแนนที่ได้</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboard-tbody"></tbody>
-                </table>
-            </div>
+    <div id="game-screen">
+        <div class="top-left-ui">
+            <div class="stat-pill">🎯 คะแนน: <span id="scoreDisplay">0</span></div>
+            <div class="stat-pill">⏰ เวลา: <span id="timeDisplay">90</span></div>
+            <div class="stat-pill">📝 ข้อที่: <span id="qCountDisplay">1</span>/100</div>
+        </div>
+        <div class="top-right-ui">
+            <script>
+    // ส่วนเสริมฟังก์ชันจัดการปุ่มหยุดเกมและสลับเพลง
+    let isPaused = false;
 
-            <button class="restart-btn" onclick="location.reload()">เล่นใหม่อีกครั้ง</button>
-            <button class="clear-btn" onclick="clearClassScores()">ล้างคะแนนทั้งห้อง</button>
-        </div>
-    </div>
+    function togglePause() {
+        if (!isPaused) {
+            // หยุดเกม
+            clearInterval(timerId);
+            clearInterval(mysteryBoxTimer);
+            document.getElementById('pauseSound').play();
+            document.getElementById('bgmGame').pause();
+            isPaused = true;
+            canProcessAnswer = false;
+            alert("⏸️ เกมหยุดชั่วคราว! พักดื่มน้ำแป๊บ แล้วกด OK เพื่อกลับมาลุยต่อครับ");
+        } else {
+            // เล่นต่อ
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateUIDisplay();
+                if (timeLeft <= 0) finalizeGame();
+            }, 1000);
+            mysteryBoxTimer = setInterval(spawnMysteryBox, 12000);
+            document.getElementById('bgmGame').play();
+            isPaused = false;
+            canProcessAnswer = true;
+        }
+    }
+            <button class="icon-btn" onclick="location.reload()">🏠</button>
+        </div>
+        
+        <div id="mystery-box">🎁</div>
+        <div class="question-box" id="questionText">A .......... B <span>?</span></div>
+        
+        <button class="choice-btn btn-green" id="btn-left">∈</button>
+        <button class="choice-btn btn-red-choice" id="btn-right">∉</button>
+        
+        <div id="feedback-overlay">✅</div>
+        <div style="position: absolute; bottom: 15px; width: 100%; text-align: center; color: white; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); font-size: 16px;">โดย ครูนนอา</div>
+    </div>
 
-    <!-- ลิงก์ไฟล์เสียงเอฟเฟกต์และเสียงดนตรีประกอบ -->
-    <audio id="bgmSound" src="https://github.com/noononth57-rgb/index.html/raw/main/Treasure%20Hunt%20-%20Jeremy%20Korpas.mp3" loop preload="auto"></audio>
-    <audio id="correctSound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" preload="auto"></audio>
-    <audio id="wrongSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3" preload="auto"></audio>
-    <audio id="bonusSound" src="https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3" preload="auto"></audio>
-    <audio id="loadingSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
+    <div id="end-screen">
+        <div class="end-card">
+            <h2 style="font-size: 2.3rem; margin-top:0; color:#4a148c; margin-bottom: 5px;">สิ้นสุดการท้าทาย!</h2>
+            <p style="font-size: 1.2rem; margin: 5px 0; color: #0288d1;">ผู้เล่น: <span id="player-display" style="font-weight: bold; color: #0288d1;"></span></p>
+            <p style="font-size: 1.2rem; margin: 5px 0;">ตอบโจทย์ไปทั้งหมด: <span id="finalQuestions" style="color:#e91e63; font-weight:bold;">0</span> ข้อ</p>
+            <p style="font-size: 1.4rem; margin: 5px 0;">คะแนนรวมสะสม: <span id="finalScore" style="color: #4caf50; font-weight: bold; font-size: 2.8rem;">0</span></p>
+            
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <h3 style="margin: 0; color: #4a148c; text-align: left;">📊 ตารางสรุปคะแนนภายในห้องเรียน</h3>
+            
+            <div class="leaderboard-box">
+                <table id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>อันดับ</th>
+                            <th>เลขที่</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th>ชั้น</th>
+                            <th>คะแนนที่ได้</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-tbody"></tbody>
+                </table>
+            </div>
 
-    <script>
-        let chosenMode = '', currentQuestion = null, score = 0, timeLeft = 90, questionCount = 1, timerId = null, mysteryBoxTimer = null, isCameraActive = false, canProcessAnswer = true;
-        let leftSymbol = '∈', rightSymbol = '∉', currentHoveredButton = null, hoverStartTime = 0;
-        const requiredHoverTime = 550; 
-        let studentData = { name: '', class: '', no: '' };
-        
-        let uniqueQuestionsLog = new Set();
+            <button class="restart-btn" onclick="location.reload()">เล่นใหม่อีกครั้ง</button>
+            <button class="clear-btn" onclick="clearClassScores()">ล้างคะแนนทั้งห้อง</button>
+        </div>
+    </div>
 
-        // ==========================================================================
-        // 🧠 ระบบคลังโจทย์ "Minecraft & Emoji Game Universe" ป้องการโจทย์ซ้ำ เรต 50:50
-        // ==========================================================================
-        function generateRawQuestionData() {
-            // 1. คลังไอเทม Minecraft ยอดฮิตที่เด็ก ๆ ชอบเล่น
-            const poolMinecraft = ['💎', '🧱', '🗡️', '🍎', '🏹', '🛡️', '🧪', '⛏️', '🪵', '🍞'];
-            
-            // 2. คลังอิโมจิสุดกวน ขวัญใจวัยรุ่น
-            const poolEmojis = ['🦊', '🐱', '🦖', '🍕', '🍟', '🎈', '🎮', '🚀', '🛸', '👾', '🔥', '💧', '⚡', '👑', '💯'];
-            
-            // 3. คลังรูปทรงเรขาคณิตและธรรมชาติ สำหรับปูพื้นฐานเรื่องสัญลักษณ์
-            const poolShapes = ['🔺', '🟩', '🟡', '⭐', '◆', '☀️', '🌙', '🍀'];
-            
-            // 4. คลังตัวเลขพื้นฐาน
-            const poolNumbers = ['1', '2', '3', '4', '5', '7', '8', '9', '10', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
-            const poolLetters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+    <!-- ลิงก์ไฟล์เสียงเอฟเฟกต์และเสียงดนตรีประกอบ -->
+    <audio id="bgmSound" src="https://github.com/noononth57-rgb/index.html/blob/main/Treasure%20Hunt%20-%20Jeremy%20Korpas.mp3" loop preload="auto"></audio>
+    <audio id="correctSound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" preload="auto"></audio>
+    <audio id="wrongSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3" preload="auto"></audio>
+    <audio id="bonusSound" src="https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3" preload="auto"></audio>
+    <audio id="loadingSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
 
+    <script>
+        let chosenMode = '', currentQuestion = null, score = 0, timeLeft = 90, questionCount = 1, timerId = null, mysteryBoxTimer = null, isCameraActive = false, canProcessAnswer = true;
+        let leftSymbol = '∈', rightSymbol = '∉', currentHoveredButton = null, hoverStartTime = 0;
+        const requiredHoverTime = 550; 
+        let studentData = { name: '', class: '', no: '' };
+        
+        let uniqueQuestionsLog = new Set();
 
-            function shuffleArray(arr) {
-                return [...arr].sort(() => Math.random() - 0.5);
-            }
+        // ==========================================================================
+        // 🧠 ระบบคลังโจทย์ "Minecraft & Emoji Game Universe" ป้องการโจทย์ซ้ำ เรต 50:50
+        // ==========================================================================
+        function generateRawQuestionData() {
+            // 1. คลังไอเทม Minecraft ยอดฮิตที่เด็ก ๆ ชอบเล่น
+            const poolMinecraft = ['💎', '🧱', '🗡️', '🍎', '🏹', '🛡️', '🧪', '⛏️', '🪵', '🍞'];
+            
+            // 2. คลังอิโมจิสุดกวน ขวัญใจวัยรุ่น
+            const poolEmojis = ['🦊', '🐱', '🦖', '🍕', '🍟', '🎈', '🎮', '🚀', '🛸', '👾', '🔥', '💧', '⚡', '👑', '💯'];
+            
+            // 3. คลังรูปทรงเรขาคณิตและธรรมชาติ สำหรับปูพื้นฐานเรื่องสัญลักษณ์
+            const poolShapes = ['🔺', '🟩', '🟡', '⭐', '◆', '☀️', '🌙', '🍀'];
+            
+            // 4. คลังตัวเลขพื้นฐาน
+            const poolNumbers = ['1', '2', '3', '4', '5', '7', '8', '9'];
 
-            function pickRandomElements(pool, count) {
-                return shuffleArray(pool).slice(0, count);
-            }
+            function shuffleArray(arr) {
+                return [...arr].sort(() => Math.random() - 0.5);
+            }
 
-            // ระบบสุ่มจับคู่ "มิกเซอร์" เพื่อสลับหมวดหมู่โจทย์ในแต่ละข้อไม่ให้ซ้ำซาก
-          const poolMixers = [
-    [...poolMinecraft, ...poolEmojis],
-    [...poolMinecraft, ...poolShapes],
-    [...poolEmojis, ...poolShapes],
-    [...poolNumbers, ...poolLetters, ...poolMinecraft], // รวมตัวแปรที่ถูกต้องมาไว้ตรงนี้
-    [...poolMinecraft, ...poolEmojis, ...poolShapes]
-];
-            const activeUniverse = shuffleArray(poolMixers[Math.floor(Math.random() * poolMixers.length)]);
+            function pickRandomElements(pool, count) {
+                return shuffleArray(pool).slice(0, count);
+            }
 
-            // สุ่มล็อกขนาดสมาชิกของเซตหลักให้อยู่ในช่วง 4 ถึง 6 ตัว
-            const setSize = Math.floor(Math.random() * 3) + 4; 
-            const mainElements = pickRandomElements(activeUniverse, setSize);
+            // ระบบสุ่มจับคู่ "มิกเซอร์" เพื่อสลับหมวดหมู่โจทย์ในแต่ละข้อไม่ให้ซ้ำซาก
+            const poolMixers = [
+                [...poolMinecraft, ...poolEmojis],
+                [...poolMinecraft, ...poolShapes],
+                [...poolEmojis, ...poolShapes],
+                [...poolNumbers, ...poolMinecraft],
+                [...poolMinecraft, ...poolEmojis, ...poolShapes]
+            ];
+            const activeUniverse = shuffleArray(poolMixers[Math.floor(Math.random() * poolMixers.length)]);
 
-            // แยกสิ่งแปลกปลอมออกจากจักรวาลเพื่อนำมาใช้ทำตัวหลอก
-            const unusedElements = activeUniverse.filter(el => !mainElements.includes(el));
-            const fakeElement = unusedElements.length > 0 ? unusedElements[Math.floor(Math.random() * unusedElements.length)] : '🌀';
+            // สุ่มล็อกขนาดสมาชิกของเซตหลักให้อยู่ในช่วง 4 ถึง 6 ตัว
+            const setSize = Math.floor(Math.random() * 3) + 4; 
+            const mainElements = pickRandomElements(activeUniverse, setSize);
 
-            // ล็อกโอกาสเฉลย 50% ให้ปุ่มซ้าย (จริง) หรือปุ่มขวา (เท็จ) เฉลี่ยเท่ากันเป๊ะ ๆ
-            const isLeftButtonCorrect = Math.random() < 0.5;
+            // แยกสิ่งแปลกปลอมออกจากจักรวาลเพื่อนำมาใช้ทำตัวหลอก
+            const unusedElements = activeUniverse.filter(el => !mainElements.includes(el));
+            const fakeElement = unusedElements.length > 0 ? unusedElements[Math.floor(Math.random() * unusedElements.length)] : '🌀';
 
-            if (chosenMode === 'membership') {
-                if (isLeftButtonCorrect) {
-                    // [เฉลยคือ ∈] สมาชิกจริง
-                    const subPattern = Math.floor(Math.random() * 3);
-                    if (subPattern === 0) {
-                        const target = mainElements[Math.floor(Math.random() * mainElements.length)];
-                        return { q: `${target} &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(mainElements).join(', ')} }`, a: '∈' };
-                    } else if (subPattern === 1) {
-                        // รูปแบบ เซตซ้อนเซต (หยิบเอาไอเทมคู่มาใส่ปีกกาเป็นสมาชิกชั้นใน)
-                        const subGroup = mainElements.slice(0, 2);
-                        const compositeElements = [`{${subGroup.join(', ')}}`, ...mainElements.slice(2)];
-                        return { q: `{${subGroup.join(', ')}} &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(compositeElements).join(', ')} }`, a: '∈' };
-                    } else {
-                        // เซตว่างโผล่เป็นสมาชิกตัวจริง
-                        const compositeElements = ['Ø', ...mainElements.slice(1)];
-                        return { q: `Ø &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(compositeElements).join(', ')} }`, a: '∈' };
-                    }
-                } else {
-                    // [เฉลยคือ ∉] ตัวลวงตา
-                    const subPattern = Math.floor(Math.random() * 3);
-                    if (subPattern === 0) {
-                        // หลอกตา: สมาชิกจริงแต่แอบครอบปีกกาหลอกถามการเป็นสมาชิก
-                        const target = mainElements[Math.floor(Math.random() * mainElements.length)];
-                        return { q: `{${target}} &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(mainElements).join(', ')} }`, a: '∉' };
-                    } else if (subPattern === 1) {
-                        // หลอกตา: แกะปีกกาของสมาชิกชั้นในออกมาดื้อๆ
-                        const innerSet = mainElements.slice(0, 2);
-                        const compositeElements = [`{${innerSet.join(', ')}}`, ...mainElements.slice(2)];
-                        return { q: `${innerSet[0]} &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(compositeElements).join(', ')} }`, a: '∉' };
-                    } else {
-                        // ไอเทมแปลกปลอมที่ไม่มีตัวตนในเซตหลัก
-                        return { q: `${fakeElement} &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(mainElements).join(', ')} }`, a: '∉' };
-                    }
-                }
-            } else {
-                // ================== โหมดสับเซต (Subset Mode) ==================
-                if (isLeftButtonCorrect) {
-                    // [เฉลยคือ ⊂] สับเซตแท้จริง
-                    const subPattern = Math.floor(Math.random() * 3);
-                    if (subPattern === 0) {
-                        const picked = mainElements.slice(0, Math.floor(Math.random() * 2) + 1);
-                        return { q: `{ ${shuffleArray(picked).join(', ')} } &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(mainElements).join(', ')} }`, a: '⊂' };
-                    } else if (subPattern === 1) {
-                        // เซตว่างเป็นสับเซตของทุกเซตเสมอ!
-                        return { q: `Ø &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(mainElements).join(', ')} }`, a: '⊂' };
-                    } else {
-                        // สับเซตซ้อนปีกกาของเซตชั้นใน
-                        const innerSet = mainElements.slice(0, 2);
-                        const compositeElements = [`{${innerSet.join(', ')}}`, ...mainElements.slice(2)];
-                        return { q: `{{ ${innerSet.join(', ')} }}` + ` &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(compositeElements).join(', ')} }`, a: '⊂' };
-                    }
-                } else {
-                    // [เฉลยคือ ⊄] ไม่เป็นสับเซต
-                    const subPattern = Math.floor(Math.random() * 3);
-                    if (subPattern === 0) {
-                        // ลืมใส่ปีกกาครอบไอเทม
-                        const target = mainElements[Math.floor(Math.random() * mainElements.length)];
-                        return { q: `${target} &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(mainElements).join(', ')} }`, a: '⊄' };
-                    } else if (subPattern === 1) {
-                        // มีไอเทมแปลกปลอมแอบสอดไส้เข้ามาในกลุ่ม
-                        const subsetMix = [mainElements[0], fakeElement];
-                        return { q: `{ ${shuffleArray(subsetMix).join(', ')} } &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(mainElements).join(', ')} }`, a: '⊄' };
-                    } else {
-                        // ดึงสมาชิกกลุ่มย่อยออกมาโดยลืมเพิ่มปีกกาครอบชั้นนอกอีกชั้น
-                        const innerSet = mainElements.slice(0, 2);
-                        const compositeElements = [`{${innerSet.join(', ')}}`, ...mainElements.slice(2)];
-                        return { q: `{ ${innerSet.join(', ')} } &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(compositeElements).join(', ')} }`, a: '⊄' };
-                    }
-                }
-            }
-        }
+            // ล็อกโอกาสเฉลย 50% ให้ปุ่มซ้าย (จริง) หรือปุ่มขวา (เท็จ) เฉลี่ยเท่ากันเป๊ะ ๆ
+            const isLeftButtonCorrect = Math.random() < 0.5;
 
-        // ระบบกรองเพื่อทำลายโจทย์ซ้ำในรอบการเล่นนั้น ๆ
-        function generateDynamicQuestion() {
-            let attempts = 0;
-            let targetQuestionObj = null;
+            if (chosenMode === 'membership') {
+                if (isLeftButtonCorrect) {
+                    // [เฉลยคือ ∈] สมาชิกจริง
+                    const subPattern = Math.floor(Math.random() * 3);
+                    if (subPattern === 0) {
+                        const target = mainElements[Math.floor(Math.random() * mainElements.length)];
+                        return { q: `${target} &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(mainElements).join(', ')} }`, a: '∈' };
+                    } else if (subPattern === 1) {
+                        // รูปแบบ เซตซ้อนเซต (หยิบเอาไอเทมคู่มาใส่ปีกกาเป็นสมาชิกชั้นใน)
+                        const subGroup = mainElements.slice(0, 2);
+                        const compositeElements = [`{${subGroup.join(', ')}}`, ...mainElements.slice(2)];
+                        return { q: `{${subGroup.join(', ')}} &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(compositeElements).join(', ')} }`, a: '∈' };
+                    } else {
+                        // เซตว่างโผล่เป็นสมาชิกตัวจริง
+                        const compositeElements = ['Ø', ...mainElements.slice(1)];
+                        return { q: `Ø &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(compositeElements).join(', ')} }`, a: '∈' };
+                    }
+                } else {
+                    // [เฉลยคือ ∉] ตัวลวงตา
+                    const subPattern = Math.floor(Math.random() * 3);
+                    if (subPattern === 0) {
+                        // หลอกตา: สมาชิกจริงแต่แอบครอบปีกกาหลอกถามการเป็นสมาชิก
+                        const target = mainElements[Math.floor(Math.random() * mainElements.length)];
+                        return { q: `{${target}} &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(mainElements).join(', ')} }`, a: '∉' };
+                    } else if (subPattern === 1) {
+                        // หลอกตา: แกะปีกกาของสมาชิกชั้นในออกมาดื้อๆ
+                        const innerSet = mainElements.slice(0, 2);
+                        const compositeElements = [`{${innerSet.join(', ')}}`, ...mainElements.slice(2)];
+                        return { q: `${innerSet[0]} &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(compositeElements).join(', ')} }`, a: '∉' };
+                    } else {
+                        // ไอเทมแปลกปลอมที่ไม่มีตัวตนในเซตหลัก
+                        return { q: `${fakeElement} &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(mainElements).join(', ')} }`, a: '∉' };
+                    }
+                }
+            } else {
+                // ================== โหมดสับเซต (Subset Mode) ==================
+                if (isLeftButtonCorrect) {
+                    // [เฉลยคือ ⊂] สับเซตแท้จริง
+                    const subPattern = Math.floor(Math.random() * 3);
+                    if (subPattern === 0) {
+                        const picked = mainElements.slice(0, Math.floor(Math.random() * 2) + 1);
+                        return { q: `{ ${shuffleArray(picked).join(', ')} } &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(mainElements).join(', ')} }`, a: '⊂' };
+                    } else if (subPattern === 1) {
+                        // เซตว่างเป็นสับเซตของทุกเซตเสมอ!
+                        return { q: `Ø &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(mainElements).join(', ')} }`, a: '⊂' };
+                    } else {
+                        // สับเซตซ้อนปีกกาของเซตชั้นใน
+                        const innerSet = mainElements.slice(0, 2);
+                        const compositeElements = [`{${innerSet.join(', ')}}`, ...mainElements.slice(2)];
+                        return { q: `{{ ${innerSet.join(', ')} }}` + ` &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(compositeElements).join(', ')} }`, a: '⊂' };
+                    }
+                } else {
+                    // [เฉลยคือ ⊄] ไม่เป็นสับเซต
+                    const subPattern = Math.floor(Math.random() * 3);
+                    if (subPattern === 0) {
+                        // ลืมใส่ปีกกาครอบไอเทม
+                        const target = mainElements[Math.floor(Math.random() * mainElements.length)];
+                        return { q: `${target} &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(mainElements).join(', ')} }`, a: '⊄' };
+                    } else if (subPattern === 1) {
+                        // มีไอเทมแปลกปลอมแอบสอดไส้เข้ามาในกลุ่ม
+                        const subsetMix = [mainElements[0], fakeElement];
+                        return { q: `{ ${shuffleArray(subsetMix).join(', ')} } &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(mainElements).join(', ')} }`, a: '⊄' };
+                    } else {
+                        // ดึงสมาชิกกลุ่มย่อยออกมาโดยลืมเพิ่มปีกกาครอบชั้นนอกอีกชั้น
+                        const innerSet = mainElements.slice(0, 2);
+                        const compositeElements = [`{${innerSet.join(', ')}}`, ...mainElements.slice(2)];
+                        return { q: `{ ${innerSet.join(', ')} } &nbsp;&nbsp;..........&nbsp;&nbsp; { ${shuffleArray(compositeElements).join(', ')} }`, a: '⊄' };
+                    }
+                }
+            }
+        }
 
-            do {
-                targetQuestionObj = generateRawQuestionData();
-                attempts++;
-            } while (uniqueQuestionsLog.has(targetQuestionObj.q) && attempts < 100);
+        // ระบบกรองเพื่อทำลายโจทย์ซ้ำในรอบการเล่นนั้น ๆ
+        function generateDynamicQuestion() {
+            let attempts = 0;
+            let targetQuestionObj = null;
 
-            uniqueQuestionsLog.add(targetQuestionObj.q);
-            return targetQuestionObj;
-        }
+            do {
+                targetQuestionObj = generateRawQuestionData();
+                attempts++;
+            } while (uniqueQuestionsLog.has(targetQuestionObj.q) && attempts < 100);
 
-        function navigateToRegister() {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('register-screen').style.display = 'flex';
-        }
+            uniqueQuestionsLog.add(targetQuestionObj.q);
+            return targetQuestionObj;
+        }
 
-        function submitRegistration() {
-            const nameInput = document.getElementById('student-name').value.trim();
-            const classInput = document.getElementById('student-class').value.trim();
-            const noInput = document.getElementById('student-no').value.trim();
+        function navigateToRegister() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('register-screen').style.display = 'flex';
+        }
 
-            if (!nameInput || !classInput || !noInput) {
-                alert("กรุณากรอกข้อมูล ชื่อ ชั้น และเลขที่ ให้ครบถ้วนก่อนเข้าเล่นเกมนะครับเด็กๆ ! 📋");
-                return;
-            }
+        function submitRegistration() {
+            const nameInput = document.getElementById('student-name').value.trim();
+            const classInput = document.getElementById('student-class').value.trim();
+            const noInput = document.getElementById('student-no').value.trim();
 
-            studentData.name = nameInput;
-            studentData.class = classInput;
-            studentData.no = noInput;
+            if (!nameInput || !classInput || !noInput) {
+                alert("กรุณากรอกข้อมูล ชื่อ ชั้น และเลขที่ ให้ครบถ้วนก่อนเข้าเล่นเกมนะครับเด็กๆ ! 📋");
+                return;
+            }
 
-            document.getElementById('register-screen').style.display = 'none';
-            document.getElementById('mode-screen').style.display = 'flex';
-        }
+            studentData.name = nameInput;
+            studentData.class = classInput;
+            studentData.no = noInput;
 
-        function openInstruction(mode) {
-            chosenMode = mode;
-            if (mode === 'membership') {
-                leftSymbol = '∈';
-                rightSymbol = '∉';
-                document.getElementById('selected-mode-text').innerText = "การเป็นสมาชิกของเซต (Minecraft & Emoji Edition 50:50)";
-            } else {
-                leftSymbol = '⊂';
-                rightSymbol = '⊄';
-                document.getElementById('selected-mode-text').innerText = "การเป็นสับเซตของเซต (Minecraft & Emoji Edition 50:50)";
-            }
-            document.getElementById('how-to-modal').style.display = 'flex';
-        }
+            document.getElementById('register-screen').style.display = 'none';
+            document.getElementById('mode-screen').style.display = 'flex';
+        }
 
-        function closeModal() {
-            document.getElementById('how-to-modal').style.display = 'none';
-        }
+        function openInstruction(mode) {
+            chosenMode = mode;
+            if (mode === 'membership') {
+                leftSymbol = '∈';
+                rightSymbol = '∉';
+                document.getElementById('selected-mode-text').innerText = "การเป็นสมาชิกของเซต (Minecraft & Emoji Edition 50:50)";
+            } else {
+                leftSymbol = '⊂';
+                rightSymbol = '⊄';
+                document.getElementById('selected-mode-text').innerText = "การเป็นสับเซตของเซต (Minecraft & Emoji Edition 50:50)";
+            }
+            document.getElementById('how-to-modal').style.display = 'flex';
+        }
 
-        async function initCamera() {
-            const camBtn = document.getElementById('cam-btn');
-            camBtn.innerText = "⏳ ระบบกำลังเชื่อมต่อกล้อง...";
-            camBtn.style.pointerEvents = "none";
+        function closeModal() {
+            document.getElementById('how-to-modal').style.display = 'none';
+        }
 
-            const videoElement = document.getElementById('bg-video');
-            try {
-                const cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                videoElement.srcObject = cameraStream;
-                isCameraActive = true;
-                videoElement.style.display = "block";
-                document.getElementById('hand-pointer').style.display = "block";
-                camBtn.innerText = "✅ เปิดใช้งานกล้องสำเร็จ";
-                camBtn.style.background = "#78909c";
-                
-                const startBtn = document.getElementById('start-btn');
-                startBtn.style.opacity = "1";
-                startBtn.style.pointerEvents = "auto";
-            } catch (err) {
-                alert("ไม่สามารถเข้าถึงกล้องได้ กรุณาตรวจสอบสิทธิ์การใช้งานกล้องบนเว็บเบราว์เซอร์");
-                console.error(err);
-                camBtn.innerText = "⚠️ การเชื่อมต่อกล้องล้มเหลว";
-                camBtn.style.pointerEvents = "auto";
-                camBtn.style.background = "#d32f2f";
-            }
-        }
+        async function initCamera() {
+            const camBtn = document.getElementById('cam-btn');
+            camBtn.innerText = "⏳ ระบบกำลังเชื่อมต่อกล้อง...";
+            camBtn.style.pointerEvents = "none";
 
-        function initAIAndCamera() {
-            initCamera(); 
+            const videoElement = document.getElementById('bg-video');
+            try {
+                const cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                videoElement.srcObject = cameraStream;
+                isCameraActive = true;
+                videoElement.style.display = "block";
+                document.getElementById('hand-pointer').style.display = "block";
+                camBtn.innerText = "✅ เปิดใช้งานกล้องสำเร็จ";
+                camBtn.style.background = "#78909c";
+                
+                const startBtn = document.getElementById('start-btn');
+                startBtn.style.opacity = "1";
+                startBtn.style.pointerEvents = "auto";
+            } catch (err) {
+                alert("ไม่สามารถเข้าถึงกล้องได้ กรุณาตรวจสอบสิทธิ์การใช้งานกล้องบนเว็บเบราว์เซอร์");
+                console.error(err);
+                camBtn.innerText = "⚠️ การเชื่อมต่อกล้องล้มเหลว";
+                camBtn.style.pointerEvents = "auto";
+                camBtn.style.background = "#d32f2f";
+            }
+        }
 
-            const hands = new Hands({
-                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-            });
-            hands.setOptions({
-                maxNumHands: 1,
-                modelComplexity: 1,
-                minDetectionConfidence: 0.6,
-                minTrackingConfidence: 0.6
-            });
-            hands.onResults(onHandTrackingResults);
+        function initAIAndCamera() {
+            initCamera(); 
 
-            const videoElement = document.getElementById('bg-video');
-            const camera = new Camera(videoElement, {
-                onFrame: async () => {
-                    if (isCameraActive) await hands.send({ image: videoElement });
-                },
-                width: 1280,
-                height: 720
-            });
-            camera.start();
-        }
+            const hands = new Hands({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+            });
+            hands.setOptions({
+                maxNumHands: 1,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.6,
+                minTrackingConfidence: 0.6
+            });
+            hands.onResults(onHandTrackingResults);
 
-        function realStartGame() {
-            uniqueQuestionsLog.clear();
+            const videoElement = document.getElementById('bg-video');
+            const camera = new Camera(videoElement, {
+                onFrame: async () => {
+                    if (isCameraActive) await hands.send({ image: videoElement });
+                },
+                width: 1280,
+                height: 720
+            });
+            camera.start();
+        }
 
-            document.getElementById('bgmSound').play().catch(e => console.log("Music play deferred"));
-            
-            document.getElementById('btn-left').innerText = leftSymbol;
-            document.getElementById('btn-right').innerText = rightSymbol;
+        function realStartGame() {
+            uniqueQuestionsLog.clear();
 
-            document.getElementById('mode-screen').style.display = 'none';
-            document.getElementById('how-to-modal').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('bgmSound').play().catch(e => console.log("Music play deferred"));
+            
+            document.getElementById('btn-left').innerText = leftSymbol;
+            document.getElementById('btn-right').innerText = rightSymbol;
 
-            updateUIDisplay();
-            generateNextQuestion();
+            document.getElementById('mode-screen').style.display = 'none';
+            document.getElementById('how-to-modal').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
 
-            timerId = setInterval(() => {
-                timeLeft--;
-                updateUIDisplay();
-                if (timeLeft <= 0) finalizeGame();
-            }, 1000);
+            updateUIDisplay();
+            generateNextQuestion();
 
-            mysteryBoxTimer = setInterval(spawnMysteryBox, 12000);
-        }
-
-        function onHandTrackingResults(results) {
-            const pointer = document.getElementById('hand-pointer');
-            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                const palmCenter = results.multiHandLandmarks[0][9]; 
-                
-                const xPixel = (1 - palmCenter.x) * window.innerWidth;
-                const yPixel = palmCenter.y * window.innerHeight;
-
-                pointer.style.left = `${xPixel}px`;
-                pointer.style.top = `${yPixel}px`;
-
-                if (document.getElementById('game-screen').style.display === 'block' && canProcessAnswer) {
-                    checkPointerCollisions(xPixel, yPixel);
-                }
-            }
-        }
-
-        function checkPointerCollisions(hx, hy) {
-            const btnLeft = document.getElementById('btn-left'), btnRight = document.getElementById('btn-right'), mBox = document.getElementById('mystery-box');
-            const rectLeft = btnLeft.getBoundingClientRect(), rectRight = btnRight.getBoundingClientRect();
-            let insideAnyButton = null;
-
-            if (hx >= rectLeft.left && hx <= rectLeft.right && hy >= rectLeft.top && hy <= rectLeft.bottom) insideAnyButton = 'left';
-            else if (hx >= rectRight.left && hx <= rectRight.right && hy >= rectRight.top && hy <= rectRight.bottom) insideAnyButton = 'right';
-
-            if (insideAnyButton) {
-                if (currentHoveredButton !== insideAnyButton) {
-                    currentHoveredButton = insideAnyButton; hoverStartTime = Date.now();
-                    if(insideAnyButton === 'left') btnLeft.classList.add('ai-hovered');
-                    if(insideAnyButton === 'right') btnRight.classList.add('ai-hovered');
-                } else {
-                    if (Date.now() - hoverStartTime >= requiredHoverTime) {
-                        executeAnswerSelection(insideAnyButton); resetHoverState();
-                    }
-                }
-            } else resetHoverState();
-
-            if (mBox.style.display === 'block') {
-                const rectBox = mBox.getBoundingClientRect();
-                if (hx >= rectBox.left && hx <= rectBox.right && hy >= rectBox.top && hy <= rectBox.bottom) collectBonusBox();
-            }
-        }
-
-        function resetHoverState() {
-            document.getElementById('btn-left').classList.remove('ai-hovered'); document.getElementById('btn-right').classList.remove('ai-hovered');
-            currentHoveredButton = null;
-        }
-
-        function executeAnswerSelection(side) {
-            canProcessAnswer = false; 
-            const chosenAnswer = (side === 'left') ? leftSymbol : rightSymbol;
-            const feedback = document.getElementById('feedback-overlay');
-            
-            if (chosenAnswer === currentQuestion.a) { 
-                score += 10; 
-                document.getElementById('correctSound').play(); 
-                feedback.innerHTML = "✅<br><span style='font-size: 45px; display:block; margin-top:10px;'>ถูกต้อง! (+10)</span>";
-                feedback.style.color = "#4caf50"; 
-            } else { 
-                document.getElementById('wrongSound').play(); 
-                feedback.innerHTML = "❌<br><span style='font-size: 45px; display:block; margin-top:10px;'>คำตอบผิด! (+0)</span>"; 
-                feedback.style.color = "#f44336"; 
-            }
-            feedback.style.display = "block";
-
-            setTimeout(() => {
-                document.getElementById('loadingSound').play();
-                feedback.style.color = "#ffeb3b"; 
-                feedback.innerHTML = "<div style='animation: spin 1.2s linear infinite; display:inline-block;'>⏳</div><br><span style='font-size: 35px; display:block; margin-top:15px; text-shadow: 2px 2px 5px rgba(0,0,0,0.5);'>กำลังสุ่มโจทย์ข้อถัดไป...</span>";
-            }, 1500);
-
-            setTimeout(() => {
-                feedback.style.display = "none";
-                questionCount++;
-                if (questionCount > 100) {
-                    finalizeGame();
-                } else { 
-                    canProcessAnswer = true; 
-                    updateUIDisplay(); 
-                    generateNextQuestion(); 
-                }
-            }, 5000);
-        }
-
-        function generateNextQuestion() {
-            currentQuestion = generateDynamicQuestion(); 
-            document.getElementById('questionText').innerHTML = currentQuestion.q;
-        }
-
-        function updateUIDisplay() {
-            document.getElementById('scoreDisplay').innerText = score;
-            document.getElementById('timeDisplay').innerText = timeLeft;
-            document.getElementById('qCountDisplay').innerText = questionCount;
-        }
-
-        function spawnMysteryBox() {
-            const mBox = document.getElementById('mystery-box');
-            mBox.style.left = `${Math.floor(Math.random() * (window.innerWidth - 150)) + 50}px`;
-            mBox.style.top = `${Math.floor(Math.random() * (window.innerHeight - 350)) + 220}px`;
-            mBox.style.display = 'block';
-            setTimeout(() => { mBox.style.display = 'none'; }, 4500);
-        }
-
-        function collectBonusBox() {
-            document.getElementById('mystery-box').style.display = 'none';
-            document.getElementById('bonusSound').play();
-            score += 20; updateUIDisplay();
-        }
-
-        function finalizeGame() {
-            clearInterval(timerId); clearInterval(mysteryBoxTimer);
-            document.getElementById('bgmSound').pause();
-            document.getElementById('game-screen').style.display = 'none';
-            document.getElementById('end-screen').style.display = 'flex';
-            
-            document.getElementById('player-display').innerText = `เลขที่ ${studentData.no} - ${studentData.name} (${studentData.class})`;
-            document.getElementById('finalScore').innerText = score;
-            document.getElementById('finalQuestions').innerText = questionCount - 1; 
-            document.getElementById('hand-pointer').style.display = 'none';
-
-            saveStudentScore(studentData.name, studentData.class, studentData.no, score);
-            displayLeaderboard();
-        }
-
-        function saveStudentScore(name, sClass, no, finalScore) {
-            let allScores = JSON.parse(localStorage.getItem('classroom_set_scores')) || [];
-            allScores.push({
-                name: name,
-                class: sClass,
-                no: parseInt(no),
-                score: finalScore,
-                timestamp: Date.now()
-            });
-            allScores.sort((a, b) => b.score - a.score || a.no - b.no);
-            localStorage.setItem('classroom_set_scores', JSON.stringify(allScores));
-        }
-
-        function displayLeaderboard() {
-            let allScores = JSON.parse(localStorage.getItem('classroom_set_scores')) || [];
-            const tbody = document.getElementById('leaderboard-tbody');
-            tbody.innerHTML = '';
-
-            if (allScores.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">ยังไม่มีบันทึกข้อมูลคะแนนในห้องนี้</td></tr>`;
-                return;
-            }
-
-            allScores.forEach((item, index) => {
-                let row = `<tr>
-                    <td>${index + 1}</td>
-                    <td>${item.no}</td>
-                    <td>${item.name}</td>
-                    <td>${item.class}</td>
-                    <td><strong>${item.score}</strong></td>
-                </tr>`;
-                tbody.innerHTML += row;
-            });
-        }
-
-        function clearClassScores() {
-            if (confirm("คุณครูแน่ใจใช่ไหมครับที่จะล้างคะแนนทั้งหมดของห้องเรียนนี้? ⚠️")) {
-                localStorage.removeItem('classroom_set_scores');
-                displayLeaderboard();
-            }
-        }
-    </script>
-</body>
-</html>
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateUIDisplay();
+                if
