@@ -212,36 +212,14 @@
             <div class="stat-pill">📝 ข้อที่: <span id="qCountDisplay">1</span>/100</div>
         </div>
         <div class="top-right-ui">
-            <script>
-    // ส่วนเสริมฟังก์ชันจัดการปุ่มหยุดเกมและสลับเพลง
-    let isPaused = false;
-
-    function togglePause() {
-        if (!isPaused) {
-            // หยุดเกม
-            clearInterval(timerId);
-            clearInterval(mysteryBoxTimer);
-            document.getElementById('pauseSound').play();
-            document.getElementById('bgmGame').pause();
-            isPaused = true;
-            canProcessAnswer = false;
-            alert("⏸️ เกมหยุดชั่วคราว! พักดื่มน้ำแป๊บ แล้วกด OK เพื่อกลับมาลุยต่อครับ");
-        } else {
-            // เล่นต่อ
-            timerId = setInterval(() => {
-                timeLeft--;
-                updateUIDisplay();
-                if (timeLeft <= 0) finalizeGame();
-            }, 1000);
-            mysteryBoxTimer = setInterval(spawnMysteryBox, 12000);
-            document.getElementById('bgmGame').play();
-            isPaused = false;
-            canProcessAnswer = true;
-        }
-    }
-            <button class="icon-btn" onclick="location.reload()">🏠</button>
-        </div>
-        
+    <script>
+        // ส่วนเสริมฟังก์ชันจัดการปุ่มหยุดเกมและสลับเพลง
+        let isPaused = false;
+        function togglePause() {
+            // ... โค้ดเดิมของคุณครู ...
+        } 
+    </script> <button class="icon-btn" onclick="location.reload()">🏠</button>
+</div>
         <div id="mystery-box">🎁</div>
         <div class="question-box" id="questionText">A .......... B <span>?</span></div>
         
