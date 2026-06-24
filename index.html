@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>การเป็นสมาชิกและสับเซต - เรื่องเซต ม.4</title>
+    <title>เก่งคณิต คิดสนุก - เรื่องเซต ม.4</title>
     
     <!-- ลิงก์ไลบรารี MediaPipe เวอร์ชันเสถียร -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -163,7 +163,6 @@
             <div style="font-size: 13px; color: #888; margin-top: 12px;">(เมื่อกดแล้ว ระบบจะพานักเรียนไปกรอก ชื่อ ชั้น เลขที่)</div>
         </div>
     </div>
-
     <div id="register-screen">
         <div class="register-card">
             <div class="register-title">ลงทะเบียนผู้เล่น 📝</div>
@@ -208,15 +207,19 @@
 
     <div id="game-screen">
         <div class="top-left-ui">
-            <div class="stat-pill">🪙 คะแนน: <span id="scoreDisplay">0</span></div>
+            <div class="stat-pill">🎯 คะแนน: <span id="scoreDisplay">0</span></div>
             <div class="stat-pill">⏰ เวลา: <span id="timeDisplay">90</span></div>
             <div class="stat-pill">📝 ข้อที่: <span id="qCountDisplay">1</span>/100</div>
         </div>
         <div class="top-right-ui">
-            <div class="icon-btn">⏸️</div>
-            <button class="icon-btn" onclick="location.reload()">🏠</button>
-        </div>
-        
+    <script>
+        // ส่วนเสริมฟังก์ชันจัดการปุ่มหยุดเกมและสลับเพลง
+        let isPaused = false;
+        function togglePause() {
+            // ... โค้ดเดิมของคุณครู ...
+        } 
+    </script> <button class="icon-btn" onclick="location.reload()">🏠</button>
+</div>
         <div id="mystery-box">🎁</div>
         <div class="question-box" id="questionText">A .......... B <span>?</span></div>
         
@@ -224,7 +227,7 @@
         <button class="choice-btn btn-red-choice" id="btn-right">∉</button>
         
         <div id="feedback-overlay">✅</div>
-        <div style="position: absolute; bottom: 15px; width: 100%; text-align: center; color: white; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); font-size: 16px;">โดย เพจคุณครูใจดี</div>
+        <div style="position: absolute; bottom: 15px; width: 100%; text-align: center; color: white; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); font-size: 16px;">โดย ครูนนอา</div>
     </div>
 
     <div id="end-screen">
@@ -257,13 +260,13 @@
         </div>
     </div>
 
-   <!-- ลิงก์ไฟล์เสียงเอฟเฟกต์และเสียงดนตรีประกอบ -->
-    <audio id="bgmSound" src="https://github.com/noononth57-rgb/index.html/blob/main/Treasure%20Hunt%20-%20Jeremy%20Korpas.mp3" loop preload="auto"></audio>
+    <!-- ลิงก์ไฟล์เสียงเอฟเฟกต์และเสียงดนตรีประกอบ -->
+    <audio id="bgmSound" src="https://github.com/noononth57-rgb/index.html/raw/main/Treasure%20Hunt%20-%20Jeremy%20Korpas.mp3" loop preload="auto"></audio>
     <audio id="correctSound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" preload="auto"></audio>
     <audio id="wrongSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3" preload="auto"></audio>
     <audio id="bonusSound" src="https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3" preload="auto"></audio>
     <audio id="loadingSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
-    
+
     <script>
         let chosenMode = '', currentQuestion = null, score = 0, timeLeft = 90, questionCount = 1, timerId = null, mysteryBoxTimer = null, isCameraActive = false, canProcessAnswer = true;
         let leftSymbol = '∈', rightSymbol = '∉', currentHoveredButton = null, hoverStartTime = 0;
@@ -286,8 +289,9 @@
             const poolShapes = ['🔺', '🟩', '🟡', '⭐', '◆', '☀️', '🌙', '🍀'];
             
             // 4. คลังตัวเลขพื้นฐาน
-            const poolAlphanumeric = ['1', '2', '3', '4', '5', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v' 'w', 'x', 'y', 'z'];
-            
+            const poolAlphanumeric = ['1', '2', '3', '4', '5', '7', '8', '9', '10', '12', '13', '14', '15', '16', '17', '18', '19', '20', 'a', 'b', 'c', 'd',
+                                 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+
             function shuffleArray(arr) {
                 return [...arr].sort(() => Math.random() - 0.5);
             }
