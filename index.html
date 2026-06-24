@@ -2,15 +2,15 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>คณิตศาสตร์มหัศจรรย์ - เซต ม.4</title>
+    <title>เกมคณิตศาสตร์ เซต ม.4</title>
     <style>
         body { margin: 0; font-family: 'Sarabun', sans-serif; background: #1a1a2e; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; overflow: hidden; }
-        .question-box { background: #ffffff; color: #333; padding: 40px 60px; border-radius: 40px; font-size: 80px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.3); margin-bottom: 50px; }
-        .btn-choice { width: 200px; height: 200px; border-radius: 50%; font-size: 80px; cursor: pointer; border: 8px solid #fff; color: white; position: absolute; bottom: 10%; transition: transform 0.2s; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .question-box { background: #ffffff; color: #333; padding: 40px 80px; border-radius: 40px; font-size: 80px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.3); margin-bottom: 60px; }
+        .btn-choice { width: 220px; height: 220px; border-radius: 50%; font-size: 80px; cursor: pointer; border: 8px solid #fff; color: white; position: absolute; bottom: 10%; transition: transform 0.2s; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .btn-choice:active { transform: scale(0.9); }
         #btn-left { background: #27ae60; left: 15%; }
         #btn-right { background: #c0392b; right: 15%; }
-        #pause-btn { position: absolute; top: 30px; right: 30px; padding: 15px 30px; font-size: 20px; font-weight: bold; cursor: pointer; background: #f1c40f; border: none; border-radius: 20px; }
+        #pause-btn { position: absolute; top: 30px; right: 30px; padding: 15px 30px; font-size: 20px; font-weight: bold; cursor: pointer; background: #f1c40f; border: none; border-radius: 20px; color: #333; }
     </style>
 </head>
 <body>
@@ -20,7 +20,7 @@
     <button class="btn-choice" id="btn-left" onclick="processAnswer('left')">∈</button>
     <button class="btn-choice" id="btn-right" onclick="processAnswer('right')">∉</button>
 
-    <audio id="bgmGame" src="https://assets.mixkit.co/active_storage/sfx/139/139-preview.mp3" loop></audio>
+    <audio id="bgmGame" src="https://assets.mixkit.co/active_storage/sfx/138/138-preview.mp3" loop></audio>
     <audio id="correctSound" src="https://assets.mixkit.co/active_storage/sfx/2004/2004-preview.mp3"></audio>
     <audio id="wrongSound" src="https://assets.mixkit.co/active_storage/sfx/2007/2007-preview.mp3"></audio>
     <audio id="pauseSound" src="https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3"></audio>
@@ -30,7 +30,7 @@
         const bgm = document.getElementById('bgmGame');
 
         function generateQuestion() {
-            // คลังข้อมูลแบบ "เพียวๆ" ไม่มีชื่อไอเทม
+            // คลังข้อมูล "รูปภาพ/อิโมจิ/ตัวเลข" เพียวๆ
             const items = ['💎', '🧱', '🗡️', '🍎', '🏹', '🦊', '🐱', '🍕', '🚀', '👾', '🔺', '⭐', '☀️', 'x', 'y', 'z', '1', '5', '9'];
             
             let elements = [...items].sort(() => Math.random() - 0.5).slice(0, 5);
@@ -39,25 +39,25 @@
             let isCorrect = Math.random() > 0.5;
             let target = isCorrect ? elements[Math.floor(Math.random() * elements.length)] : '🌀';
             
-            // แสดงแค่ตัวไอคอนและสัญลักษณ์เซต
-            return { q: `${target} &nbsp; ∈/∉ &nbsp; ${setStr}`, a: isCorrect ? '∈' : '∉' };
+            // ส่งเฉพาะข้อมูลเพื่อนำไปแสดงผล
+            return { target: target, set: setStr, isCorrect: isCorrect };
+        }
+
+        function nextQuestion() {
+            currentQuestion = generateQuestion();
+            document.getElementById('questionText').innerHTML = `${currentQuestion.target} <br> ........... <br> ${currentQuestion.set}`;
         }
 
         function processAnswer(side) {
             if(isPaused) return;
-            let ans = (side === 'left') ? '∈' : '∉';
-            if(ans === currentQuestion.a) {
+            let userAnswer = (side === 'left'); // true = ∈, false = ∉
+            
+            if(userAnswer === currentQuestion.isCorrect) {
                 document.getElementById('correctSound').play();
             } else {
                 document.getElementById('wrongSound').play();
             }
             nextQuestion();
-        }
-
-        function nextQuestion() {
-            currentQuestion = generateQuestion();
-            // ปรับข้อความโจทย์ให้แสดงเฉพาะสัญลักษณ์
-            document.getElementById('questionText').innerHTML = `${currentQuestion.q.split('&nbsp;')[0]} <br> .......... <br> ${currentQuestion.q.split('&nbsp;')[2]}`;
         }
 
         function togglePause() {
@@ -73,7 +73,7 @@
         }
 
         window.onload = () => {
-            bgm.volume = 0.4;
+            bgm.volume = 0.5;
             bgm.play();
             nextQuestion();
         };
