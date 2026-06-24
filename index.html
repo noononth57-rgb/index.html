@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>เก่งคณิต คิดสนุก - เรื่องเซต</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.1/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
@@ -26,16 +26,16 @@
         #login-screen {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            /* 🔗 คุณครูสามารถเปลี่ยนลิงก์รูปพื้นหลังของหน้าเข้าสู่ระบบได้ที่บรรทัดด้านล่างนี้เลยครับ */
+            /* 🔗 คุณครูอย่าลืมเปลี่ยนคำว่า "ชื่อไฟล์รูปภาพ.png" ให้เป็นชื่อไฟล์รูปภาพพื้นหลังจริงๆ บน GitHub นะครับ */
             background-image: url(https://raw.githubusercontent.com/noononth57-rgb/index.html/main/ชื่อไฟล์รูปภาพ.png);
-            background-color: #3b1472; /* สีพื้นหลังสำรองในกรณีที่ยังไม่ได้ใส่รูปภาพ */
+            background-color: #3b1472; 
             background-size: cover;
             background-position: center;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end; /* ดันกล่องเมนูลงมาด้านล่าง */
+            justify-content: flex-end; 
             align-items: center;
-            padding-bottom: 80px; /* ระยะห่างจากขอบล่าง */
+            padding-bottom: 80px; 
             z-index: 400;
         }
         .login-container-card {
@@ -59,9 +59,8 @@
         }
         .btn-login-trigger:active { transform: translateY(6px); box-shadow: none; }
 
-
         /* ==========================================================================
-           2. สไตล์ หน้ากรอกข้อมูลนักเรียน (Register Screen)
+           2. สไตล์ หน้าลงทะเบียน (Register Screen)
            ========================================================================== */
         #register-screen { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
@@ -78,9 +77,8 @@
         .btn-submit-reg { background: #ff9800; color: white; border: none; padding: 12px 40px; font-size: 1.3rem; font-weight: bold; border-radius: 15px; cursor: pointer; box-shadow: 0 5px 0 #e65100; width: 100%; margin-top: 10px; }
         .btn-submit-reg:active { transform: translateY(4px); box-shadow: none; }
 
-
         /* ==========================================================================
-           3. สไตล์ หน้าเลือกโหมดเกม (Mode Screen - เดิมคือ start-screen)
+           3. สไตล์ หน้าเลือกโหมดเกม (Mode Screen)
            ========================================================================== */
         #mode-screen { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
@@ -96,8 +94,6 @@
         .menu-btn-img:hover { transform: scale(1.08); }
         .menu-btn-img:active { transform: scale(0.95); filter: drop-shadow(0px 3px 0px rgba(0,0,0,0.3)); }
 
-
-        /* --- หน้าต่างป๊อปอัพควบคุมการเปิดกล้อง --- */
         #how-to-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 250; justify-content: center; align-items: center; }
         .modal-card { background: white; border-radius: 30px; width: 550px; padding: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); text-align: center; position: relative; } 
         .modal-title { font-size: 2.3rem; font-weight: bold; color: #4a148c; margin-bottom: 20px; }
@@ -111,9 +107,8 @@
         .btn-camera-init { background: #0288d1; }
         .btn-game-start { background: #4caf50; opacity: 0.5; pointer-events: none; } 
 
-
         /* ==========================================================================
-           4. สไตล์ หน้าอินเตอร์เฟสหลักระหว่างเล่นเกม (Game Screen)
+           4. สไตล์ หน้าเล่นเกม (Game Screen)
            ========================================================================== */
         #game-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
         
@@ -134,11 +129,11 @@
         #mystery-box { position: absolute; font-size: 65px; display: none; cursor: pointer; z-index: 50; animation: bounce 1s infinite alternate; }
         @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
 
-        #feedback-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 180px; display: none; z-index: 90; text-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-
+        /* จัดแต่งหน้าต่างเฉลยคะแนนตรงกลางจอ */
+        #feedback-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 140px; display: none; z-index: 90; text-shadow: 0 10px 25px rgba(0,0,0,0.4); text-align: center; font-weight: bold; }
 
         /* ==========================================================================
-           5. สไตล์ หน้าสรุปคะแนนหลังเล่นจบ (End Screen)
+           5. สไตล์ หน้าสรุปคะแนน (End Screen)
            ========================================================================== */
         #end-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); color: white; flex-direction: column; justify-content: center; align-items: center; z-index: 500; overflow-y: auto; padding: 20px 0; }
         .end-card { background: #ffffff; color: #333; padding: 35px; border-radius: 30px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.5); width: 650px; max-width: 90%; }
@@ -234,7 +229,7 @@
     <div id="end-screen">
         <div class="end-card">
             <h2 style="font-size: 2.3rem; margin-top:0; color:#4a148c; margin-bottom: 5px;">สิ้นสุดการท้าทาย!</h2>
-            <p style="font-size: 1.2rem; margin: 5px 0; color: #555;">ผู้เล่น: <span id="player-display" style="font-weight: bold; color: #0288d1;"></span></p>
+            <p style="font-size: 1.2rem; margin: 5px 0; color: #0288d1;">ผู้เล่น: <span id="player-display" style="font-weight: bold; color: #0288d1;"></span></p>
             <p style="font-size: 1.2rem; margin: 5px 0;">ตอบโจทย์ไปทั้งหมด: <span id="finalQuestions" style="color:#e91e63; font-weight:bold;">0</span> ข้อ</p>
             <p style="font-size: 1.4rem; margin: 5px 0;">คะแนนรวมสะสม: <span id="finalScore" style="color: #4caf50; font-weight: bold; font-size: 2.8rem;">0</span></p>
             
@@ -252,8 +247,7 @@
                             <th>คะแนนที่ได้</th>
                         </tr>
                     </thead>
-                    <tbody id="leaderboard-tbody">
-                        </tbody>
+                    <tbody id="leaderboard-tbody"></tbody>
                 </table>
             </div>
 
@@ -268,7 +262,7 @@
     <audio id="bonusSound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" preload="auto"></audio>
 
     <script>
-        // --- 🛠️ ล็อคระบบสร้างโจทย์ให้เสถียรที่สุด สุ่มวนลูปคงที่ 100 ข้อ แก้ปัญหาการค้างกดเริ่มไม่ได้ ---
+        // --- ระบบสุ่มสร้างคลังโจทย์คณิตศาสตร์ ---
         function generateQuestionsPool(mode) {
             const pool = [];
             const setsLevel1 = ["{1, 2, 3}", "{2, 3, 4}", "{a, b, c}"];
@@ -314,16 +308,13 @@
         let leftSymbol = '', rightSymbol = '', currentHoveredButton = null, hoverStartTime = 0;
         const requiredHoverTime = 550; 
 
-        // ข้อมูลของนักเรียนที่ล็อกอินเข้ามาเล่น
         let studentData = { name: '', class: '', no: '' };
 
-        // ไปหน้าลงทะเบียน
         function navigateToRegister() {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('register-screen').style.display = 'flex';
         }
 
-        // ตรวจสอบการลงทะเบียน บังคับ 3 ช่อง
         function submitRegistration() {
             const nameInput = document.getElementById('student-name').value.trim();
             const classInput = document.getElementById('student-class').value.trim();
@@ -339,7 +330,7 @@
             studentData.no = noInput;
 
             document.getElementById('register-screen').style.display = 'none';
-            document.getElementById('mode-screen').style.display = 'flex'; // ไปโหมดเลือกเกมต่อ
+            document.getElementById('mode-screen').style.display = 'flex';
         }
 
         function openInstruction(mode) {
@@ -482,29 +473,39 @@
             currentHoveredButton = null;
         }
 
+        // ==========================================================================
+        // 🌟 ฟังก์ชันตรวจคำตอบ ปรับแต่งสี + คะแนน และหน่วงเวลา 5 วินาที ตามที่สั่ง
+        // ==========================================================================
         function executeAnswerSelection(side) {
-            canProcessAnswer = false;
+            canProcessAnswer = false; // บล็อกไม่ให้ตรวจจับข้ออื่นซ้ำระหว่างรอ 5 วินาที
             const chosenAnswer = (side === 'left') ? leftSymbol : rightSymbol;
             const feedback = document.getElementById('feedback-overlay');
             
             if (chosenAnswer === currentQuestion.a) { 
                 score += 10; 
                 document.getElementById('correctSound').play(); 
-                feedback.innerText = "✅";
-                feedback.style.color = "#4caf50";
+                feedback.innerHTML = "✅<br><span style='font-size: 75px; display:block; margin-top:10px;'>+10</span>";
+                feedback.style.color = "#4caf50"; // ขึ้นสีเขียวเมื่อถูก
             } else { 
                 document.getElementById('wrongSound').play(); 
-                feedback.innerText = "❌"; 
-                feedback.style.color = "#f44336"; 
+                feedback.innerHTML = "❌<br><span style='font-size: 75px; display:block; margin-top:10px;'>+0</span>"; 
+                feedback.style.color = "#f44336"; // ขึ้นสีแดงเมื่อผิด
             }
 
             feedback.style.display = "block";
+
+            // ⏰ เว้นระยะเวลาแต่ละข้อ 5 วินาที (5000 มิลลิวินาที)
             setTimeout(() => {
                 feedback.style.display = "none";
                 questionCount++;
-                if (questionCount > 100) finalizeGame();
-                else { canProcessAnswer = true; updateUIDisplay(); generateNextQuestion(); }
-            }, 600);
+                if (questionCount > 100) {
+                    finalizeGame();
+                } else { 
+                    canProcessAnswer = true; 
+                    updateUIDisplay(); 
+                    generateNextQuestion(); 
+                }
+            }, 5000);
         }
 
         function generateNextQuestion() {
@@ -532,7 +533,6 @@
             score += 20; updateUIDisplay();
         }
 
-        // --- ระบบตารางสรุปคะแนนผู้เล่นทุกคนภายในห้องเรียน (Leaderboard) ---
         function finalizeGame() {
             clearInterval(timerId); clearInterval(mysteryBoxTimer);
             document.getElementById('bgmSound').pause();
@@ -561,6 +561,7 @@
             localStorage.setItem('classroom_set_scores', JSON.stringify(allScores));
         }
 
+        // 🌟 ส่วนลูปตารางคะแนนและแท็กปิดไฟล์ที่เติมเข้าไปใหม่ให้ครบถ้วน
         function displayLeaderboard() {
             let allScores = JSON.parse(localStorage.getItem('classroom_set_scores')) || [];
             const tbody = document.getElementById('leaderboard-tbody');
@@ -571,21 +572,20 @@
                 return;
             }
 
-            allScores.forEach((student, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td style="font-weight:bold; color:#ff9800;">${index + 1}</td>
-                    <td>${student.no}</td>
-                    <td>${student.name}</td>
-                    <td>${student.class}</td>
-                    <td style="font-weight:bold; color:#4caf50;">${student.score}</td>
-                `;
-                tbody.appendChild(row);
+            allScores.forEach((item, index) => {
+                let row = `<tr>
+                    <td>${index + 1}</td>
+                    <td>${item.no}</td>
+                    <td>${item.name}</td>
+                    <td>${item.class}</td>
+                    <td><strong>${item.score}</strong></td>
+                </tr>`;
+                tbody.innerHTML += row;
             });
         }
 
         function clearClassScores() {
-            if (confirm("คุณครูต้องการล้างคะแนนของเด็กๆ ทุกคนในห้องเรียนนี้เพื่อเริ่มเก็บคะแนนกลุ่มใหม่ใช่ไหมครับ?")) {
+            if (confirm("คุณครูแน่ใจใช่ไหมครับที่จะล้างคะแนนทั้งหมดของห้องเรียนนี้? ⚠️")) {
                 localStorage.removeItem('classroom_set_scores');
                 displayLeaderboard();
             }
