@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>เก่งคณิต คิดสนุก - เรื่องเซต ม.4 ปราบเซียน</title>
     
-    <!-- ลิงก์ไลบรารี MediaPipe เวอร์ชันเสถียร -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
@@ -22,7 +21,7 @@
         #hand-pointer { position: absolute; width: 35px; height: 35px; background: rgba(255, 235, 59, 0.8); border: 3px solid #fff; border-radius: 50%; pointer-events: none; z-index: 999; display: none; transform: translate(-50%, -50%); box-shadow: 0 0 20px #ffeb3b, inset 0 0 8px #fff; }
 
         /* ==========================================================================
-           1. หน้าเข้าสู่เกม (Login Screen) - อัปเดตลิงก์รูปภาพใหม่ของคุณครูเรียบร้อยครับ
+           1. หน้าเข้าสู่เกม (Login Screen)
            ========================================================================== */
         #login-screen {
             position: absolute;
@@ -123,13 +122,13 @@
         .choice-btn { width: 180px; height: 180px; border-radius: 50%; border: none; font-size: 65px; font-weight: bold; color: white; position: absolute; bottom: 15%; box-shadow: 0 12px 24px rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center; transition: transform 0.2s; }
         .choice-btn.ai-hovered { transform: scale(1.18); box-shadow: 0 0 35px #ffeb3b; }
         .btn-green { background: radial-gradient(circle at 30% 30%, #66bb6a, #4caf50); left: 15%; }
-        .btn-blue { background: radial-gradient(circle at 30% 30%, #4fc3f7, #0288d1); right: 15%; }
+        .btn-red-choice { background: radial-gradient(circle at 30% 30%, #ef5350, #d32f2f); right: 15%; }
 
         #mystery-box { position: absolute; font-size: 65px; display: none; cursor: pointer; z-index: 50; animation: bounce 1s infinite alternate; }
         @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
 
         /* หน้าต่างเฉลยคะแนนตรงกลางจอ + แอนิเมชันตอนโหลด */
-        #feedback-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 130px; display: none; z-index: 90; text-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; font-weight: bold; background: rgba(0,0,0,0.75); padding: 40px 60px; border-radius: 30px; min-width: 500px; backdrop-filter: blur(5px); }
+        #feedback-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 130px; display: none; z-index: 90; text-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; font-weight: bold; background: rgba(0,0,0,0.85); padding: 40px 60px; border-radius: 30px; min-width: 550px; backdrop-filter: blur(5px); }
         
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -185,9 +184,8 @@
 
     <div id="mode-screen">
         <div class="menu-container">
-            <!-- ทุกปุ่มจะวิ่งเข้าสู่โหมดสับขาหลอกระดับเซียนผสมผสาน ∈ และ ⊂ ทั้งหมดตามเงื่อนไขใหม่ครับ -->
-            <img src="4.png" class="menu-btn-img" onclick="openInstruction('advanced')" alt="การเป็นสมาชิก">
-            <img src="3.png" class="menu-btn-img" onclick="openInstruction('advanced')" alt="การเป็นสับเซต">
+            <img src="4.png" class="menu-btn-img" onclick="openInstruction('membership')" alt="โหมดการเป็นสมาชิก (∈ และ ∉)">
+            <img src="3.png" class="menu-btn-img" onclick="openInstruction('subset')" alt="โหมดการเป็นสับเซต (⊂ และ ⊄)">
         </div>
     </div>
 
@@ -197,7 +195,7 @@
             <div class="modal-title">เตรียมความพร้อม 🎮</div>
             <div class="modal-list">
                 <b>1. โหมดการเล่น:</b> <span id="selected-mode-text" style="color:#0288d1; font-weight:bold;"></span><br>
-                <b>2. กติกาการตอบ:</b> ยกฝ่ามือค้างไว้บนปุ่มตัวเลือกซ้าย-ขวาเพื่อเติมเครื่องหมายลงในช่องว่าง<br>
+                <b>2. กติกาการตอบ:</b> ยกฝ่ามือค้างไว้บนปุ่มตัวเลือกซ้าย-ขวาเพื่อเติมเครื่องหมายลงในช่องว่าง ให้ถูกต้อง<br>
                 <b>3. โบนัสพิเศษ:</b> เลื่อนมือไปเปิดกล่องของขวัญ 🎁 สุ่มรับ +20 คะแนน
             </div>
             <div class="modal-btn-group">
@@ -221,9 +219,8 @@
         <div id="mystery-box">🎁</div>
         <div class="question-box" id="questionText">A .......... B <span>?</span></div>
         
-        <!-- ปรับแต่งปุ่มกดหลักฝั่งซ้ายเป็นสมาชิก และฝั่งขวาเป็นสับเซต -->
         <button class="choice-btn btn-green" id="btn-left">∈</button>
-        <button class="choice-btn btn-blue" id="btn-right">⊂</button>
+        <button class="choice-btn btn-red-choice" id="btn-right">∉</button>
         
         <div id="feedback-overlay">✅</div>
         <div style="position: absolute; bottom: 15px; width: 100%; text-align: center; color: white; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); font-size: 16px;">โดย เพจคุณครูใจดี</div>
@@ -259,15 +256,20 @@
         </div>
     </div>
 
-    <!-- ลิงก์ไฟล์เสียงเอฟเฟกต์ -->
     <audio id="bgmSound" src="https://assets.mixkit.co/active_storage/sfx/135/135-preview.mp3" loop preload="auto"></audio>
-    <audio id="correctSound" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto"></audio>
+    <audio id="correctSound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" preload="auto"></audio>
     <audio id="wrongSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3" preload="auto"></audio>
-    <audio id="bonusSound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" preload="auto"></audio>
+    <audio id="bonusSound" src="https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3" preload="auto"></audio>
+    <audio id="loadingSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
 
     <script>
+        let chosenMode = '', currentQuestion = null, score = 0, timeLeft = 90, questionCount = 1, timerId = null, mysteryBoxTimer = null, isCameraActive = false, canProcessAnswer = true;
+        let leftSymbol = '∈', rightSymbol = '∉', currentHoveredButton = null, hoverStartTime = 0;
+        const requiredHoverTime = 550; 
+        let studentData = { name: '', class: '', no: '' };
+
         // ==========================================================================
-        // 🧠 ระบบสร้างโจทย์สุ่มวิเคราะห์สับขาหลอกอัตโนมัติ (จำนวนสมาชิก 4 - 6 ตัวตามสั่ง)
+        // 🧠 ระบบสร้างโจทย์แยกระหว่างโหมด สมาชิก (∈, ∉) กับ สับเซต (⊂, ⊄) ระดับ ม.4 ปราบเซียน
         // ==========================================================================
         function generateDynamicQuestion() {
             const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'x', 'y', 'z'];
@@ -279,63 +281,92 @@
 
             // ล็อกจำนวนสมาชิกของเซตหลักให้มีจำนวน 4 ถึง 6 ตัวเท่านั้น (มากกว่า 3 แต่ไม่เกิน 6)
             const setSize = Math.floor(Math.random() * 3) + 4; 
-            const type = Math.floor(Math.random() * 5); // สุ่มรูปแบบข้อสอบ 5 รูปแบบแนวลวงตา
 
-            switch(type) {
-                case 0: 
-                    // [แนวที่ 1: เซตซ้อนเซต] -> ตอบ เป็นสมาชิก (∈)
-                    let pairs = [['1','2'], ['3','4'], ['5','3'], ['7','6'], ['9','8'], ['a','b'], ['x','y']];
-                    let chosenPairs = getRandomElements(pairs, setSize);
-                    let targetPair = chosenPairs[Math.floor(Math.random() * chosenPairs.length)];
-                    return {
-                        q: `{${targetPair.join(', ')}} &nbsp;&nbsp;..........&nbsp;&nbsp; {${chosenPairs.map(p => `{${p.join(', ')}}`).join(', ')}}`,
-                        a: '∈'
-                    };
-
-                case 1: 
-                    // [แนวที่ 2: ดึงสมาชิกสลับตำแหน่งทำสับเซต] -> ตอบ เป็นสับเซต (⊂)
-                    let chosenLetters = getRandomElements(letters, setSize);
-                    let subLetters = getRandomElements(chosenLetters, 2); 
-                    subLetters.sort(() => Math.random() - 0.5); // สลับที่ให้เด็กงง เช่น {c, a} ปะทะ {a, b, c, d...}
-                    return {
-                        q: `{${subLetters.join(', ')}} &nbsp;&nbsp;..........&nbsp;&nbsp; {${chosenLetters.join(', ')}}`,
-                        a: '⊂'
-                    };
-
-                case 2: 
-                    // [แนวที่ 3: ปีกกาซ้อนปีกกา] -> ตอบ เป็นสับเซต (⊂)
-                    let baseElements = getRandomElements(letters, setSize - 1);
-                    let special = baseElements[0]; 
-                    let mainElements = [`{${special}}`, ...baseElements.slice(1)];
-                    mainElements.sort(() => Math.random() - 0.5); 
-                    return {
-                        q: `{{${special}}} &nbsp;&nbsp;..........&nbsp;&nbsp; {${mainElements.join(', ')}}`,
-                        a: '⊂'
-                    };
-
-                case 3: 
-                    // [แนวที่ 4: เซตว่างมหาภัย] -> ตอบ เป็นสับเซต (⊂)
-                    let randNums = getRandomElements(numbers, setSize);
-                    return {
-                        q: `Ø &nbsp;&nbsp;..........&nbsp;&nbsp; {${randNums.join(', ')}}`,
-                        a: '⊂'
-                    };
-
-                case 4: 
-                    // [แนวที่ 5: สมาชิกธรรมดาเดี่ยวๆ ในเซตผสม] -> ตอบ เป็นสมาชิก (∈)
-                    let mixedList = getRandomElements([...letters, ...numbers], setSize);
-                    let targetElement = mixedList[Math.floor(Math.random() * mixedList.length)];
-                    return {
-                        q: `${targetElement} &nbsp;&nbsp;..........&nbsp;&nbsp; {${mixedList.join(', ')}}`,
-                        a: '∈'
-                    };
+            if (chosenMode === 'membership') {
+                // หลอกเด็กด้วยโหมดการเป็นสมาชิก (ตัวเลือกต้องมีแค่ ∈ หรือ ∉)
+                const type = Math.floor(Math.random() * 4);
+                switch(type) {
+                    case 0: 
+                        // เซตซ้อนเซต -> ตอบ เป็นสมาชิก (∈)
+                        let pairs = [['1','2'], ['3','4'], ['5','3'], ['7','6'], ['a','b'], ['x','y']];
+                        let chosenPairs = getRandomElements(pairs, setSize);
+                        let targetPair = chosenPairs[Math.floor(Math.random() * chosenPairs.length)];
+                        return {
+                            q: `{${targetPair.join(', ')}} &nbsp;&nbsp;..........&nbsp;&nbsp; {${chosenPairs.map(p => `{${p.join(', ')}}`).join(', ')}}`,
+                            a: '∈'
+                        };
+                    case 1:
+                        // สมาชิกตัวเดี่ยวปกติในเซตผสม -> ตอบ เป็นสมาชิก (∈)
+                        let mixedList = getRandomElements([...letters, ...numbers], setSize);
+                        let targetElement = mixedList[Math.floor(Math.random() * mixedList.length)];
+                        return {
+                            q: `${targetElement} &nbsp;&nbsp;..........&nbsp;&nbsp; {${mixedList.join(', ')}}`,
+                            a: '∈'
+                        };
+                    case 2:
+                        // หลอกเอาเซตย่อยมาถาม (ไม่มีระบุเป็นสมาชิกข้างใน) -> ตอบ ไม่เป็นสมาชิก (∉)
+                        let chosenLetters = getRandomElements(letters, setSize);
+                        let subSetFake = getRandomElements(chosenLetters, 2);
+                        return {
+                            q: `{${subSetFake.join(', ')}} &nbsp;&nbsp;..........&nbsp;&nbsp; {${chosenLetters.join(', ')}}`,
+                            a: '∉'
+                        };
+                    case 3:
+                        // สมาชิกที่ไม่มีอยู่จริงเลย -> ตอบ ไม่เป็นสมาชิก (∉)
+                        let randNums = getRandomElements(numbers, setSize);
+                        return {
+                            q: `0 &nbsp;&nbsp;..........&nbsp;&nbsp; {${randNums.join(', ')}}`,
+                            a: '∉'
+                        };
+                }
+            } else {
+                // หลอกเด็กด้วยโหมดสับเซต (ตัวเลือกต้องมีแค่ ⊂ หรือ ⊄)
+                const type = Math.floor(Math.random() * 5);
+                switch(type) {
+                    case 0:
+                        // สับเซตแท้จริงจากการสลับลำดับสมาชิก -> ตอบ เป็นสับเซต (⊂)
+                        let chosenLetters = getRandomElements(letters, setSize);
+                        let subLetters = getRandomElements(chosenLetters, 2); 
+                        subLetters.sort(() => Math.random() - 0.5);
+                        return {
+                            q: `{${subLetters.join(', ')}} &nbsp;&nbsp;..........&nbsp;&nbsp; {${chosenLetters.join(', ')}}`,
+                            a: '⊂'
+                        };
+                    case 1:
+                        // สับเซตแบบปีกกาซ้อนปีกกา -> ตอบ เป็นสับเซต (⊂)
+                        let baseElements = getRandomElements(letters, setSize - 1);
+                        let special = baseElements[0]; 
+                        let mainElements = [`{${special}}`, ...baseElements.slice(1)];
+                        mainElements.sort(() => Math.random() - 0.5); 
+                        return {
+                            q: `{{${special}}} &nbsp;&nbsp;..........&nbsp;&nbsp; {${mainElements.join(', ')}}`,
+                            a: '⊂'
+                        };
+                    case 2:
+                        // เซตว่าง มหาภัย -> ตอบ เป็นสับเซต (⊂)
+                        let randNums = getRandomElements(numbers, setSize);
+                        return {
+                            q: `Ø &nbsp;&nbsp;..........&nbsp;&nbsp; {${randNums.join(', ')}}`,
+                            a: '⊂'
+                        };
+                    case 3:
+                        // หลอกเอาตัวสมาชิกธรรมดาไม่มีปีกกามาถาม -> ตอบ ไม่เป็นสับเซต (⊄)
+                        let mixedList = getRandomElements([...letters, ...numbers], setSize);
+                        let targetElement = mixedList[Math.floor(Math.random() * mixedList.length)];
+                        return {
+                            q: `${targetElement} &nbsp;&nbsp;..........&nbsp;&nbsp; {${mixedList.join(', ')}}`,
+                            a: '⊄'
+                        };
+                    case 4:
+                        // เซตที่มีสมาชิกแปลกปลอมหลุดรอดมา -> ตอบ ไม่เป็นสับเซต (⊄)
+                        let baseSet = getRandomElements(numbers, setSize);
+                        return {
+                            q: `{99, ${baseSet[0]}} &nbsp;&nbsp;..........&nbsp;&nbsp; {${baseSet.join(', ')}}`,
+                            a: '⊄'
+                        };
+                }
             }
         }
-
-        let chosenMode = '', currentQuestion = null, score = 0, timeLeft = 90, questionCount = 1, timerId = null, mysteryBoxTimer = null, isCameraActive = false, canProcessAnswer = true;
-        let leftSymbol = '∈', rightSymbol = '⊂', currentHoveredButton = null, hoverStartTime = 0;
-        const requiredHoverTime = 550; 
-        let studentData = { name: '', class: '', no: '' };
 
         function navigateToRegister() {
             document.getElementById('login-screen').style.display = 'none';
@@ -362,7 +393,15 @@
 
         function openInstruction(mode) {
             chosenMode = mode;
-            document.getElementById('selected-mode-text').innerText = "ระดับปานกลาง - ยาก (สุ่มสลับ ∈ และ ⊂)";
+            if (mode === 'membership') {
+                leftSymbol = '∈';
+                rightSymbol = '∉';
+                document.getElementById('selected-mode-text').innerText = "การเป็นสมาชิกของเซต (สุ่มตัวเลือก ∈ และ ∉)";
+            } else {
+                leftSymbol = '⊂';
+                rightSymbol = '⊄';
+                document.getElementById('selected-mode-text').innerText = "การเป็นสับเซตของเซต (สุ่มตัวเลือก ⊂ และ ⊄)";
+            }
             document.getElementById('how-to-modal').style.display = 'flex';
         }
 
@@ -423,8 +462,9 @@
         }
 
         function realStartGame() {
-            document.getElementById('bgmSound').play().catch(e => console.log("deferred"));
+            document.getElementById('bgmSound').play().catch(e => console.log("Music play deferred"));
             
+            // เปลี่ยนข้อความบนปุ่มตัวเลือกตามโหมดที่เลือกแบบไดนามิก
             document.getElementById('btn-left').innerText = leftSymbol;
             document.getElementById('btn-right').innerText = rightSymbol;
 
@@ -493,14 +533,14 @@
         }
 
         // ==========================================================================
-        // ⏳ ระบบตรวจคะแนนแบ่งเวลา และสลับขึ้นสถานะโหลดข้อถัดไป (โหลด 5 วินาทีล็อกปุ่ม)
+        // ⏳ ระบบนับถอยหลังแบ่งเวลาโชว์คะแนนและดาวน์โหลดพร้อมเสียงเอฟเฟกต์รอบใหม่
         // ==========================================================================
         function executeAnswerSelection(side) {
             canProcessAnswer = false; 
             const chosenAnswer = (side === 'left') ? leftSymbol : rightSymbol;
             const feedback = document.getElementById('feedback-overlay');
             
-            // จังหวะที่ 1: แสดงผลลัพธ์ ถูก/ผิด ชัดๆ เป็นเวลา 1.5 วินาทีแรก
+            // จังหวะที่ 1: ตรวจสอบผลลัพธ์และส่งเสียงตอบถูก/ผิดแบบทันควัน โชว์ค้างไว้ 1.5 วินาที
             if (chosenAnswer === currentQuestion.a) { 
                 score += 10; 
                 document.getElementById('correctSound').play(); 
@@ -513,13 +553,14 @@
             }
             feedback.style.display = "block";
 
-            // จังหวะที่ 2: พอผ่านไป 1.5 วินาที เปลี่ยนข้อความเป็นสถานะดาวน์โหลดและหมุนไอคอนนาฬิกาทรายลุ้นๆ
+            // จังหวะที่ 2: ครบ 1.5 วินาทีปุ๊บ เปิดเสียงโหลดข้อถัดไปพร้อมเอฟเฟกต์วงล้อหมุนอีก 3.5 วินาที
             setTimeout(() => {
+                document.getElementById('loadingSound').play();
                 feedback.style.color = "#ffeb3b"; 
                 feedback.innerHTML = "<div style='animation: spin 1.2s linear infinite; display:inline-block;'>⏳</div><br><span style='font-size: 35px; display:block; margin-top:15px; text-shadow: 2px 2px 5px rgba(0,0,0,0.5);'>กำลังสุ่มโจทย์ข้อถัดไป...</span>";
             }, 1500);
 
-            // จังหวะที่ 3: เมื่อครบ 5 วินาทีเต็ม จึงทำการเปลี่ยนโจทย์ข้อถัดไป
+            // จังหวะที่ 3: ครบ 5 วินาทีถ้วน เปลี่ยนข้อทันทีและเปิดให้ยกมือเลือกต่อได้
             setTimeout(() => {
                 feedback.style.display = "none";
                 questionCount++;
