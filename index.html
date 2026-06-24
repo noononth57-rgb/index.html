@@ -289,8 +289,9 @@
             const poolShapes = ['🔺', '🟩', '🟡', '⭐', '◆', '☀️', '🌙', '🍀'];
             
             // 4. คลังตัวเลขพื้นฐาน
-            const poolAlphanumeric = ['1', '2', '3', '4', '5', '7', '8', '9', '10', '12', '13', '14', '15', '16', '17', '18', '19', '20', 'a', 'b', 'c', 'd',
-                                 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+            const poolNumbers = ['1', '2', '3', '4', '5', '7', '8', '9', '10', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
+            const poolLetters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+
 
             function shuffleArray(arr) {
                 return [...arr].sort(() => Math.random() - 0.5);
@@ -301,13 +302,13 @@
             }
 
             // ระบบสุ่มจับคู่ "มิกเซอร์" เพื่อสลับหมวดหมู่โจทย์ในแต่ละข้อไม่ให้ซ้ำซาก
-            const poolMixers = [
-                [...poolMinecraft, ...poolEmojis],
-                [...poolMinecraft, ...poolShapes],
-                [...poolEmojis, ...poolShapes],
-                [...poolNumbers, ...poolMinecraft],
-                [...poolMinecraft, ...poolEmojis, ...poolShapes]
-            ];
+          const poolMixers = [
+    [...poolMinecraft, ...poolEmojis],
+    [...poolMinecraft, ...poolShapes],
+    [...poolEmojis, ...poolShapes],
+    [...poolNumbers, ...poolLetters, ...poolMinecraft], // รวมตัวแปรที่ถูกต้องมาไว้ตรงนี้
+    [...poolMinecraft, ...poolEmojis, ...poolShapes]
+];
             const activeUniverse = shuffleArray(poolMixers[Math.floor(Math.random() * poolMixers.length)]);
 
             // สุ่มล็อกขนาดสมาชิกของเซตหลักให้อยู่ในช่วง 4 ถึง 6 ตัว
